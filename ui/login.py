@@ -1,9 +1,9 @@
 from flask import render_template, request
 
-from ui.app import webapp
+from ui import webapp
 
 
-@webapp.route("/")
+@webapp.route("/login")
 def login_register():
     return render_template("login.html")
 

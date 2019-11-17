@@ -1,4 +1,4 @@
-from ui.app import webapp
+from ui import webapp
 
 validate_values = {
     'PWORD_MIN_LEN': 6,
