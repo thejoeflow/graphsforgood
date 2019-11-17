@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block script %}
+<script>
+$( function() {
+    let
+    username = $( "#username" ),
+    password = $( "#password" ),
+    allFields = $( [] ).add( username ).add( password )
+
+    function updateTips( t ) {
+      $("#validateTips").text(t).addClass( "ui-state-highlight" );
+      setTimeout(function() {
+        $("#validateTips").removeClass( "ui-state-highlight", 1500 );
+      }, 500 );
+    }
+
+    function checkLength( o, n, min, max ) {
+      if ( o.val().length > max || o.val().length < min ) {
+        o.addClass( "ui-state-error" );
+        updateTips( "Length of " + n + " must be between " +
+          min + " and " + max + "." );
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    function checkRegexp( o, regexp, n ) {
+      if ( !( regexp.test( o.val() ) ) ) {
+        o.addClass( "ui-state-error" );
+        updateTips( n );
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    function validateFields() {
+      let valid = true;
+      allFields.removeClass( "ui-state-error" );
+      valid = valid && checkLength( username, "username", {{NAME_MIN_LEN}}, {{NAME_MAX_LEN}} );
+      valid = valid && checkLength( password, "password", {{PWORD_MIN_LEN}}, {{PWORD_MAX_LEN}} );
+      valid = valid && checkRegexp( username, /{{NAME_REGEX}}/i, "Username may only consist of a-z, 0-9, underscores, dashes, and spaces" );
+      return valid;
+    }
+
+    $( "#dialog-form" ).dialog({
+      autoOpen: false,
+      height: 300,
+      width: 600,
+      modal: true,
+        buttons:{
+          "Register": function(){
+              $("#register-form").submit();
+          },
+            Cancel: function(){
+                $("#dialog-form").dialog("close");
+            }
+        },
+      close: function() {
+        $("#register-form")[0].reset();
+        allFields.removeClass( "ui-state-error" );
+        $("#validateTips").text("All form fields are required.");
+      }
+    });
+
+    $("#register-form" ).on( "submit", function( event ) {
+        let valid = validateFields();
+        if(!valid){
+            event.preventDefault();
+        }
+    });
+
+    $( "#register" ).button().on( "click", function() {
+      $( "#dialog-form" ).dialog("open");
+    });
+
+  });
+</script>
+{% endblock %}
+
+
+
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center" style="padding-bottom: 30px">
+        <div class="col">
+            <h1>Graphs for Good</h1>
+            <h3>Helping people help people, one graph at a time</h3>
+        </div>
+    </div>
+
+    <div class='error'>{{error_msg if error_msg != None}}</div>
+    <form action='{{url_for('login_register')}}' method='post'>
+        <div>
+        <label>Username</label>
+        <input type='text' name='username' value='{{username if username  != None}}'>
+        </div>
+        <div>
+        <label>Password</label>
+        <input type='password' name='password'>
+        </div>
+        <div>
+            <input type="submit" value="Login">
+        </div>
+    </form>
+</div>
+
+<div class="container">
+    <button id="register"><p>Not registered? Click here to sign up!</p></button>
+</div>
+
+<div id="dialog-form" title="New User Registration">
+    <div>
+        <p id="validateTips">All form fields are required.</p>
+    </div>
+
+  <form id="register-form" action='{{url_for('register_new_user')}}' method='post'>
+    <fieldset>
+      <div>
+          <label for="username">Username: </label>
+          <input type="text" name="username" id="username" class="text ui-widget-content ui-corner-all">
+      </div>
+      <div>
+          <label for="password">Password: </label>
+          <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all">
+      </div>
+      <div>
+            <!-- Allow form submission with keyboard without duplicating the dialog button -->
+          <input id="register-submit" type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+      </div>
+    </fieldset>
+  </form>
+</div>
+
+{% endblock %}
