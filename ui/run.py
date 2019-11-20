@@ -1,4 +1,4 @@
 #!/usr/bin/python
-import ui
+from ui import webapp
 
-ui.webapp.run(debug=True)
+webapp.run(debug=True)

@@ -8,7 +8,34 @@
         <h3>Your graphs</h3>
     </div>
     <div class="row">
-        <a href="{{ url_for("graph") }}"><button class="ui-button">Register New Graph</button></a>
+        <div class="card-deck">
+            {% for graph in graphs %}
+                    <div class="card">
+                        <img class="card-img-top" src="{{ url_for("graph_img", id=graph.id )}}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ graph.name }}</h5>
+                                <div class="row">
+                                    <div class="col"><b>Type: </b></div>
+                                    <div class="col"><p>{{ graph.type.name }}</p></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col"><b>Subscribers: </b></div>
+                                    <div class="col"><p>{{ graph.get_emails() }}</p></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col"><b>Schedule: </b></div>
+                                    <div class="col"><p>{{ graph.schedule }}</p></div>
+                                </div>
+                            <a href="{{ url_for("graph_details", id=graph.id) }}" class="btn btn-primary">Edit</a>
+                        </div>
+                    </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row" style="padding-top:30px;">
+        <div class="col">
+            <a href="{{ url_for("new_graph") }}"><button class="ui-button">Register New Graph</button></a>
+        </div>
     </div>
 
 {% endblock %}

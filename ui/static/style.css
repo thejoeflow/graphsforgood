@@ -6,6 +6,10 @@ h1{
     color: darkblue;
 }
 
+.graph-img{
+    width:100%
+}
+
 div.container{
     text-align: center;
     vertical-align: center;
