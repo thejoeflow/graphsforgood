@@ -4,17 +4,19 @@
 
 Inputs: 
 - s3\_filename
+- username (To avoid naming conflicts in S3)
 - title (optional)
 - labels[] (optional)
 
 Output: 
-- PNG location on S3 (usr/pie/id)
+- PNG location on S3 (tmp/usr/pie.png)
 
 
 ### generate\_line()
 
 Inputs: 
 - s3\_filename
+- username (To avoid naming conflicts in S3)
 - x\_column
 - y\_column[] (cap to ~10)
 - title (optional)
@@ -23,7 +25,7 @@ Inputs:
 - x\_constraint (optional)
 
 Output: 
-- PNG location on S3 (usr/line/id)
+- PNG location on S3 (tmp/usr/line.png)
 
 
 
@@ -31,10 +33,11 @@ Output:
 
 Inputs: 
 - s3\_filename
+- username (To avoid naming conflicts in S3)
 - columns[] (cap to ~20)
 - title (optional)
 - xlabel[] (optional)
 - ylabel (optional)
 
 Output: 
-- PNG location on S3 (usr/bar/id)
+- PNG location on S3 (tmp/usr/bar.png)
