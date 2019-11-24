@@ -27,7 +27,7 @@ AWS_REGION = "us-east-1"
 SUBJECT = "Graphs for Good - Here's your graph"
 
 # The full path to the file that will be attached to the email.
-ATTACHMENT = "sample_graph.png"
+#ATTACHMENT = "sample_graph.png"
 
 # The email body for recipients with non-HTML email clients.
 BODY_TEXT = "Hello,\r\nPlease see the attached file for a list of customers to contact."
@@ -69,18 +69,18 @@ msg_body.attach(textpart)
 msg_body.attach(htmlpart)
 
 # Define the attachment part and encode it using MIMEApplication.
-att = MIMEApplication(open(ATTACHMENT, 'rb').read())
+#att = MIMEApplication(open(ATTACHMENT, 'rb').read())
 
 # Add a header to tell the email client to treat this part as an attachment,
 # and to give the attachment a name.
-att.add_header('Content-Disposition','attachment',filename=os.path.basename(ATTACHMENT))
+#att.add_header('Content-Disposition','attachment',filename=os.path.basename(ATTACHMENT))
 
 # Attach the multipart/alternative child container to the multipart/mixed
 # parent container.
 msg.attach(msg_body)
 
 # Add the attachment to the parent container.
-msg.attach(att)
+#msg.attach(att)
 print(msg)
 try:
     #Provide the contents of the email.
