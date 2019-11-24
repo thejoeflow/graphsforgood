@@ -21,7 +21,9 @@ echo "getting lambda layer arn"
 arn="$(aws lambda list-layers | python -c "import sys,json; print(json.load(sys.stdin)['Layers'][0]['LatestMatchingVersion']['LayerVersionArn'])")"
 
 echo "updating function code"
-aws lambda update-function-code --function-name generate_graph --zip-file fileb://function.zip
+aws lambda update-function-code --function-name generate_graph --zip-file fileb://function.zip > aws.log
 
 echo "updating function to use layer"
-aws lambda update-function-configuration --function-name generate_graph --layers ${arn}
+aws lambda update-function-configuration --function-name generate_graph --layers ${arn} >> aws.log
+
+echo "Done. AWS results are in aws.log"
