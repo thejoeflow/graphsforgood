@@ -21,28 +21,24 @@ def download_file_from_s3(bucket_name, filename):
     my_bucket.download_file(key, local_filename)
 
 
-def send_email_with_attachment_from_s3(filename):
+def send_email_with_attachment_from_s3(bucket_name, filename, sender, recipient, subject, body_html):
     bucket_name = 'lambda-ses2'
     download_file_from_s3(bucket_name, filename)
 
     s3 = boto3.client("s3")
-    SENDER = "Graphs For Good Service <armando.ordorica@mail.utoronto.ca>"
-    RECIPIENT = "armandordorica@gmail.com"
+    SENDER = sender
+    #"Graphs For Good Service <armando.ordorica@mail.utoronto.ca>"
+    RECIPIENT = recipient # "armandordorica@gmail.com"
     AWS_REGION = "us-east-1"
-    SUBJECT = "Graphs for Good - Here's your graph"
+    SUBJECT = subject #"Graphs for Good - Here's your graph"
     ATTACHMENT = filename
 
-    BODY_TEXT = "Hello,\r\nPlease see the attached file for a list of customers to contact."
+    BODY_TEXT = body_html
 
-    BODY_HTML = """
-    <html>
-    <head></head>
-    <body>
-    <h1>Hello!</h1>
-    <p>Please see the attached file for a list of customers to contact.</p>
-    </body>
-    </html>
-    """
+    BODY_HTML = body_html
+
+    # Graphs
+    # for Good - Here's your graph
 
     CHARSET = "utf-8"
     client = boto3.client('ses', region_name=AWS_REGION)
@@ -100,7 +96,9 @@ bucket_name = 'lambda-ses2'
 # download_file_from_s3(bucket_name, filename)
 # send_email_with_attachment_from_local('file2.png');
 
-filename = get_keys_from_s3(bucket_name)[1]
-send_email_with_attachment_from_s3(filename)
-
-
+filename = get_keys_from_s3(bucket_name)[3]
+sender = 'armandordorica@gmail.com'
+recipient= 'armandordorica@gmail.com'
+subject = 'TESTING S3 TO EMAIL FUNCTION'
+body_html = '<h1>Testing S3 to email function</h1>'
+send_email_with_attachment_from_s3(bucket_name, filename, sender, recipient, subject, body_html)
