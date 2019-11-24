@@ -26,3 +26,7 @@ div.list-container ul{
     text-align: left;
     list-style: none;
 }
+
+.clickable{
+    cursor: pointer;
+}

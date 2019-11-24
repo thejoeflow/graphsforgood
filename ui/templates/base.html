@@ -1,24 +1,35 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="http://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/overcast/jquery-ui.css">
+        <script src="https://kit.fontawesome.com/d29663abb2.js" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         <title>{{title}}</title>
     </head>
     <body>
-        <div class="container-fluid">
-            <div class="container">
-                <div class="row">
-                    <h1 class="page-title">{{title}}</h1>
-                </div>
+        <nav class="navbar navbar-light bg-light justify-content-between">
+            <a class="navbar-brand" href="#">
+                <img src="{{url_for('static', filename='logo.png')}}" width="30" height="30" class="d-inline-block align-top" alt="">
+                Graphs for Good
+            </a>
+            {% if session['username'] == None %}
+            <div class="nav-item">
+                <b>Hello,</b></b> {{ session['username'] | default("user", true) }}
+                <a href="{{ url_for('logout')}}">
+                <button class="btn ui-button btn-sm">
+                <span class="glyphicon glyphicon-log-out"></span>Logout</button>
+                </a>
             </div>
+            {% endif %}
+        </nav>
+        <div class="container-fluid">
             {% block content %}
             {% endblock %}
         </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     {% block script %}
     {% endblock %}

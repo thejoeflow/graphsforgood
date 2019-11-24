@@ -1,7 +1,6 @@
 from flask import request, render_template, session, redirect, url_for
 
-import graph
-from ui import webapp
+from ui import webapp, graph
 
 
 # @webapp.before_request
@@ -26,3 +25,9 @@ def main():
     user_id = 123456
     graphs = graph.get_graphs_for_user(user_id)
     return render_template("/main.html", graphs=graphs)
+
+
+@webapp.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('index'))
