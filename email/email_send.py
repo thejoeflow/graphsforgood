@@ -4,7 +4,12 @@ from botocore.exceptions import ClientError
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
+import os.path
 
+
+from email.mime.application import MIMEApplication
+
+s3 = boto3.client("s3")
 # Replace sender@example.com with your "From" address.
 # This address must be verified with Amazon SES.
 SENDER = "Graphs For Good Service <armando.ordorica@mail.utoronto.ca>"
