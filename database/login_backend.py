@@ -66,7 +66,7 @@ def create_new_user(email_add, first_name, last_name, password):
         print("Failed to register user with email address provided: " + email_add, e, "\n")
         return False
 
-# create_new_user('mkbbj@gmail.com', 'shreya', 'rajput', 'password')\
+create_new_user('test@gmail.com', 'shreya', 'rajput', 'password')
 
 def get_user(email_add):
     try:
