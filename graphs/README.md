@@ -1,27 +1,28 @@
 # Generating Graphs (Using matplotlib)
 
+Deploy using deployment script
+
 Sample event JSON: 
 {
-  type: pie,
-  s3\_filename: /tmp/Frank/data.csv,
-  username: Frank,
-  labels: \[x, y, z]
+  "type": "pie",
+  "s3\_filename": "/tmp/Frank/data.csv",
+  "username": "Frank,
+  "labels": \["x", "y", "z"]
 }
 
 Lambda event input: 
 - type (Must be one of following:)
-  * 'pie'
-  * 'line'
-  * 'bar'
-
-Each type will trigger a seperate function as defined in the following: 
-
-### generate\_pie()
-
-Inputs: 
+  * "pie"
+  * "line"
+  * "bar"
 - s3\_filename
 - username (To avoid naming conflicts in S3)
 - title (optional)
+
+Each type will trigger a seperate function as defined in the following: 
+### generate\_pie()
+
+Inputs: 
 - labels[] (optional)
 
 Output: 
@@ -31,14 +32,11 @@ Output:
 ### generate\_line()
 
 Inputs: 
-- s3\_filename
-- username (To avoid naming conflicts in S3)
 - x\_column
 - y\_column[] (cap to ~10)
-- title (optional)
 - xlabel (optional)
 - ylabel (optional)
-- x\_constraint (optional)
+- x\_constraint (optional) (list, example(\[0,100])
 
 Output: 
 - PNG location on S3 (tmp/usr/line.png)
@@ -48,10 +46,7 @@ Output:
 ### generate\_bar()
 
 Inputs: 
-- s3\_filename
-- username (To avoid naming conflicts in S3)
 - columns[] (cap to ~20)
-- title (optional)
 - xlabel[] (optional)
 - ylabel (optional)
 
