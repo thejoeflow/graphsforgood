@@ -1,16 +1,92 @@
 {% extends "base.html" %}
 
 {% block script %}
+    <script>
+        $( function() {
+
+            $("#emailExample").hide();
+
+            $("#emailAdd").click(function(){
+                let email = $("#subscriberEmailAdd").val();
+                let clone = $("#emailExample").clone();
+                clone.find(".email")[0].value = email;
+                clone.addClass("d-flex");
+                clone.show();
+                $("#subscriberList").append(clone);
+            });
+
+            $(".emailDelete").click(function(){
+
+            });
+
+            $('#subscriberList').on('click','.emailDelete',function(){
+                   $( this ).parent().remove();
+            });
+
+            $('#dataFileUpload').on("change", function() {
+                $('#previewGraph').prop('disabled', !$(this).val());
+            });
+
+        });
+    </script>
 {% endblock %}
 
 {% block content %}
     <div class="row">
-        <h3>Graph Registration</h3>
+        <h3>Register a New Graph</h3>
     </div>
-    <div class="row">
-        <form>
-
-        </form>
-    </div>
-
+    <form>
+        <div class="row">
+            <h4>Graph Configuration</h4>
+            <div class="col-sm">
+                <div class="form-group">
+                    <label for="dataFileUpload">Data Example</label>
+                    <input type="file" class="form-control-file" id="dataFileUpload">
+                    <label for="dataFileUpload">Graph Type</label>
+                    <select class="custom-select" id="graphTypeSelect">
+                        <option selected>Choose...</option>
+                        <option value="pie">Pie Graph</option>
+                        <option value="bar">Bar Chart</option>
+                        <option value="line">Line Graph</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm">
+                <img src="{{ url_for('static', filename='graph_placeholder.png') }}" width="60%"/>
+                <small id="emailHelp" class="form-text text-muted">Click below to generate a preview for your graph</small>
+                <button id="previewGraph" type="button" class="btn btn-secondary" disabled>Preview</button>
+            </div>
+        </div>
+        <div class="row">
+          <div class="form-group">
+              <label for="subscriberEmailAdd">Subscriber Emails</label>
+              <input type="email" class="form-control" id="subscriberEmailAdd" aria-describedby="emailHelp" placeholder="Enter email">
+              <small id="emailHelp" class="form-text text-muted">Add email subscribers for this graph</small>
+              <button id="emailAdd" type="button" class="btn btn-secondary">Add</button>
+          </div>
+        </div>
+        <div class="row">
+            <ul id="subscriberList" class="list-group list-group-horizontal-md">
+                <li id="emailExample" class="badge badge-pill badge-light justify-content-between align-items-center">
+                    <input type='text' name='subscribers' value='email' class="email form-control-plaintext" readonly>
+                    <span class="emailDelete clickable"><i class="fas fa-minus-circle"></i></span>
+                </li>
+            </ul>
+        </div>
+        <div class="row">
+          <div class="form-group">
+            <label for="exampleInputPassword1">Password</label>
+            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="exampleCheck1">
+            <label class="form-check-label" for="exampleCheck1">Check me out</label>
+          </div>
+        </div>
+        <div class="row">
+            <button type="submit" class="btn btn-primary">Register New Graph</button>
+        </div>
+    </form>
 {% endblock %}

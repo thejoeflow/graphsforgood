@@ -1,4 +1,5 @@
 #!/usr/bin/python
 from ui import webapp
 
-webapp.run(debug=True)
+if __name__ == "__main__":
+    webapp.run(debug=True)
