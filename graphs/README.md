@@ -1,5 +1,21 @@
 # Generating Graphs (Using matplotlib)
 
+Sample event JSON: 
+{
+  type: pie,
+  s3\_filename: /tmp/Frank/data.csv,
+  username: Frank,
+  labels: \[x, y, z]
+}
+
+Lambda event input: 
+- type (Must be one of following:)
+  * 'pie'
+  * 'line'
+  * 'bar'
+
+Each type will trigger a seperate function as defined in the following: 
+
 ### generate\_pie()
 
 Inputs: 
