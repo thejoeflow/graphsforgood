@@ -27,10 +27,10 @@ def send_email_with_attachment_from_s3(bucket_name, filename, sender, recipient,
 
     s3 = boto3.client("s3")
     SENDER = sender
-    #"Graphs For Good Service <armando.ordorica@mail.utoronto.ca>"
-    RECIPIENT = recipient # "armandordorica@gmail.com"
+    # "Graphs For Good Service <armando.ordorica@mail.utoronto.ca>"
+    RECIPIENT = recipient  # "armandordorica@gmail.com"
     AWS_REGION = "us-east-1"
-    SUBJECT = subject #"Graphs for Good - Here's your graph"
+    SUBJECT = subject  # "Graphs for Good - Here's your graph"
     ATTACHMENT = filename
 
     BODY_TEXT = body_html
@@ -86,19 +86,24 @@ def get_keys_from_s3(s3_bucket_name):
     conn = client('s3')
     keys = []
     for key in conn.list_objects(Bucket=s3_bucket_name)['Contents']:
-        #print(key['Key'])
+        # print(key['Key'])
         keys.append(key['Key'])
     return keys
 
 
 bucket_name = 'lambda-ses2'
-
-# download_file_from_s3(bucket_name, filename)
-# send_email_with_attachment_from_local('file2.png');
-
 filename = get_keys_from_s3(bucket_name)[3]
 sender = 'armandordorica@gmail.com'
-recipient= 'armandordorica@gmail.com'
+recipients = ['armandordorica@gmail.com', 'armando.ordorica@mail.utoronto.ca']
 subject = 'TESTING S3 TO EMAIL FUNCTION'
 body_html = '<h1>Testing S3 to email function</h1>'
-send_email_with_attachment_from_s3(bucket_name, filename, sender, recipient, subject, body_html)
+#send_email_with_attachment_from_s3(bucket_name, filename, sender, recipient, subject, body_html)
+
+
+def s3_to_email_multiple_emails(bucket_name, filename, sender, recipients, subject, body_html):
+    for i in range(0, len(recipients)):
+        send_email_with_attachment_from_s3(bucket_name, filename, sender, recipients[i], subject, body_html)
+        print("Email sent to {}".format(recipients[i]))
+
+
+s3_to_email_multiple_emails(bucket_name, filename, sender, recipients, subject, body_html)
