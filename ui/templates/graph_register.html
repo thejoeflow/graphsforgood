@@ -5,6 +5,9 @@
         $( function() {
 
             $("#emailExample").hide();
+            hideGraphOptions(true);
+            $('#pie_options').css('min-height',  $('#line_options').height());
+            $('#bar_options').css('min-height',  $('#line_options').height());
 
             $("#emailAdd").click(function(){
                 let email = $("#subscriberEmailAdd").val();
@@ -27,17 +30,48 @@
                 $('#previewGraph').prop('disabled', !$(this).val());
             });
 
+            $('#graphTypeSelect').on('change load', function() {
+                hideGraphOptions(false);
+                switch(this.value){
+                    case "pie":
+                        $('#pie_options').show();
+                        break;
+                    case "bar":
+                        $('#bar_options').show();
+                        break;
+                    case "line":
+                        $('#line_options').show();
+                        $('#line_options').css('visibility','visible');
+                        break;
+                    default:
+                        hideGraphOptions(true);
+                }
+            });
+
         });
+        function hideGraphOptions(maintainSpace) {
+            {#We want to retain the page space taken up by line chart options because it is the largest one#}
+            $('#pie_options').hide();
+            $('#bar_options').hide();
+            if (maintainSpace){
+                $('#line_options').show();
+                $('#line_options').css('visibility', 'hidden');
+            }
+            else {
+                $('#line_options').hide();
+                $('#line_options').css('visibility', 'visible');
+            }
+        }
     </script>
 {% endblock %}
 
 {% block content %}
-    <div class="row">
-        <h3>Register a New Graph</h3>
+    <div class="row justify-content-center page-title odd">
+        <h2>Register a New Graph</h2>
     </div>
     <form>
-        <div class="row">
-            <h4>Graph Configuration</h4>
+        <h3>Graph Configuration</h3>
+        <div class="row even">
             <div class="col-sm">
                 <div class="form-group">
                     <label for="dataFileUpload">Data Example</label>
@@ -49,6 +83,69 @@
                         <option value="bar">Bar Chart</option>
                         <option value="line">Line Graph</option>
                     </select>
+
+                    {#PIE CHART OPTIONS#}
+                    <div id="pie_options">
+                        <label for="graphTitle">Title</label>
+                        <input id="graphTitle" type="text" class="form-control" >
+
+                        <label for="customLabels">Custom Labels</label>
+                        <small id="customLabelHelp" class="form-text text-muted">If you'd like to use custom labels for the pie graph, enter them as a comma-separated list here</small>
+                        <input id="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
+                    </div>
+
+                    {#BAR CHART OPTIONS#}
+                    <div id="bar_options">
+                        <label for="graphTitle">Title</label>
+                        <input id="graphTitle" type="text" class="form-control" >
+
+                        <label for="axisLabels">Axis Labels</label>
+                        <div id="axisLabels" class="form-row">
+                            <div class="col">
+                                <label for="xLabel">X-Axis Label</label>
+                                <input id="xLabel" type="text" class="form-control" >
+                            </div>
+                            <div class="col">
+                                <label for="yLabel">Y-Axis Label</label>
+                                <input id="yLabel" type="text" class="form-control" >
+                            </div>
+                        </div>
+
+                        <label for="customLabels">Custom Labels</label>
+                        <small id="customLabelHelp" class="form-text text-muted">If you'd like to use custom bar labels for the graph, enter them as a comma-separated list here</small>
+                        <input id="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
+
+                    </div>
+
+                    {#LINE GRAPH OPTIONS#}
+                    <div id="line_options">
+
+                        <label for="graphTitle">Title</label>
+                        <input id="graphTitle" type="text" class="form-control" >
+
+                        <label for="axisLabels">Axis Labels</label>
+                        <div id="axisLabels" class="form-row">
+                            <div class="col">
+                                <label for="xLabel">X-Axis Label</label>
+                                <input id="xLabel" type="text" class="form-control" >
+                            </div>
+                            <div class="col">
+                                <label for="yLabel">Y-Axis Label</label>
+                                <input id="yLabel" type="text" class="form-control" >
+                            </div>
+                        </div>
+
+                        <label for="customLabels">Custom Labels</label>
+                        <small id="customLabelHelp" class="form-text text-muted">If you'd like to use custom line labels for the graph, enter them as a comma-separated list here</small>
+                        <input id="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
+
+                        <label for="customLabels">X-Axis Data</label>
+                        <small id="customLabelHelp" class="form-text text-muted">Based off the data you uploaded, please select the column which represents the x-axis.</small>
+                        <select id="xAxisColumn" type="text" class="custom-select">
+                            <option selected>Choose...</option>
+                        </select>
+                    </div>
+
                 </div>
             </div>
             <div class="col-sm">
@@ -57,35 +154,47 @@
                 <button id="previewGraph" type="button" class="btn btn-secondary" disabled>Preview</button>
             </div>
         </div>
-        <div class="row">
-          <div class="form-group">
-              <label for="subscriberEmailAdd">Subscriber Emails</label>
-              <input type="email" class="form-control" id="subscriberEmailAdd" aria-describedby="emailHelp" placeholder="Enter email">
-              <small id="emailHelp" class="form-text text-muted">Add email subscribers for this graph</small>
-              <button id="emailAdd" type="button" class="btn btn-secondary">Add</button>
-          </div>
+
+        <h3>Schedule Configuration</h3>
+        <div class="row even">
+            <div class="col-sm">
+              <div class="form-group">
+                  <label for="subscriberEmailAdd">Subscriber Emails</label>
+                  <input type="email" class="form-control" id="subscriberEmailAdd" aria-describedby="emailHelp" placeholder="Enter email">
+                  <small id="emailHelp" class="form-text text-muted">Add email subscribers for this graph</small>
+                  <button id="emailAdd" type="button" class="btn btn-secondary">Add</button>
+              </div>
+            </div>
+            <div class="col-sm">
+                <h5>Subscribers</h5>
+                <ul id="subscriberList" class="list-group list-group-horizontal-md">
+                    <li id="emailExample" class="badge badge-pill badge-light justify-content-between align-items-center">
+                        <input type='text' name='subscribers' value='email' class="email form-control-plaintext" readonly>
+                        <span class="emailDelete clickable"><i class="fas fa-minus-circle"></i></span>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="row">
-            <ul id="subscriberList" class="list-group list-group-horizontal-md">
-                <li id="emailExample" class="badge badge-pill badge-light justify-content-between align-items-center">
-                    <input type='text' name='subscribers' value='email' class="email form-control-plaintext" readonly>
-                    <span class="emailDelete clickable"><i class="fas fa-minus-circle"></i></span>
-                </li>
-            </ul>
+            <div class="form-group">
+
+            </div>
         </div>
-        <div class="row">
+
+
+        <div class="row odd">
           <div class="form-group">
             <label for="exampleInputPassword1">Password</label>
             <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
           </div>
         </div>
-        <div class="row">
+        <div class="row even">
           <div class="form-group form-check">
             <input type="checkbox" class="form-check-input" id="exampleCheck1">
             <label class="form-check-label" for="exampleCheck1">Check me out</label>
           </div>
         </div>
-        <div class="row">
+        <div class="row odd">
             <button type="submit" class="btn btn-primary">Register New Graph</button>
         </div>
     </form>
