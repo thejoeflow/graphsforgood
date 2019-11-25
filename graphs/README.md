@@ -6,7 +6,7 @@ Sample event JSON:
 ```json
 {
   "type": "pie",
-  "s3\_filename": "/tmp/Frank/data.csv",
+  "s3_filename": "/tmp/Frank/data.csv",
   "username": "Frank,
   "labels": ["x", "y", "z"]
 }
