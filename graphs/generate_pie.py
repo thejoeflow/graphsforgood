@@ -4,9 +4,7 @@ import csv
 import matplotlib.pyplot as plt
 
 
-# def lambda_handler(event, context):
-def test(event):
-    # generate pie()
+def generate_pie(event):
 
     # extract arguments:
     filename = str()
@@ -80,6 +78,8 @@ def test(event):
 
     # plot the data
     plt.pie(values, labels=labels, shadow=True, autopct='%1.1f%%')
+    if title is not None:
+        plt.title(title)
     plt.savefig('/tmp/pie.png', format='png')
 
     # upload to s3
