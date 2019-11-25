@@ -22,8 +22,9 @@ arn="$(aws lambda list-layers | python -c "import sys,json; print(json.load(sys.
 
 echo "updating function code"
 aws lambda update-function-code --function-name generate_graph --zip-file fileb://function.zip > aws.log
+rm function.zip
 
 echo "updating function to use layer"
-aws lambda update-function-configuration --function-name generate_graph --layers ${arn} >> aws.log
+aws lambda update-function-configuration --function-name generate_graph --layers ${arn} --timeout 10 --memory-size 256 >> aws.log
 
 echo "Done. AWS results are in aws.log"
