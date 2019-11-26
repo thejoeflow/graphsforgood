@@ -51,6 +51,8 @@ def generate_graph(type, title, csv_name, username,
 
         # parse response from lambda function
         filename = resp['Payload'].read().decode("utf-8")
+        if filename == 'ERROR':
+            return None
 
         # get a presigned link to graph on s3
         s3_client = boto3.client('s3')
