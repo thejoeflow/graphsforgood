@@ -2,14 +2,68 @@ import io
 import os
 from random import randint
 from enum import Enum
-from flask import render_template, send_file, url_for
+from flask import render_template, send_file, url_for, request
 from PIL import Image
-from ui import webapp
+from ui import webapp, lambdas
 
 
 @webapp.route("/new_graph")
 def new_graph():
     return render_template("graph_register.html")
+
+
+@webapp.route("/new_graph", methods=['POST'])
+def register_graph():
+    form = request.form
+    csvFile = form['dataFile']
+    graph_type = form['graphType']
+    if graph_type == "pie":
+        i = 0
+    elif graph_type == "bar":
+        i = 1
+    else: # line chart
+        i = 2
+
+    title = form.getlist('title')[i]
+    customLabels = form.getlist('title')[i]
+    xAxisCol = form['xAxisCol']
+    if i == 1 or i == 2:
+        xLabel = form.getlist('xLabel')[i]
+        yLabel = form.getlist('yLabel')[i]
+
+    subscribers = form.getlist('subscribers')
+    async = form['sendSchedule'] == 'onDataUpdate'
+    cron = form['cron']
+
+    return render_template("graph_register.html")
+
+
+@webapp.route("/generate_graph", methods=['POST'])
+def generate_graph_preview():
+    form = request.form
+    csvFile = form['dataFile']
+    graph_type = form['graphType']
+    if graph_type == "pie":
+        i = 0
+    elif graph_type == "bar":
+        i = 1
+    else:  # line chart
+        i = 2
+
+    title = form.getlist('title')[i]
+    customLabels = form.getlist('title')[i]
+    xAxisCol = form['xAxisCol']
+    if i == 1 or i == 2:
+        xLabel = form.getlist('xLabel')[i]
+        yLabel = form.getlist('yLabel')[i]
+
+    subscribers = form.getlist('subscribers')
+    async = form['sendSchedule'] == 'onDataUpdate'
+    cron = form['cron']
+
+    lambdas.generate_graph(graph_type, )
+
+    return
 
 
 @webapp.route("/graph/<id>")
@@ -35,8 +89,10 @@ def graph_img(id):
 def get_graphs_for_user(user_id):
     # TODO: Get user graphs from database
     graphs = [Graph("abc123", "Monthly Spending", GraphType.PIE, ["test@email.com"], "every day"),
-              Graph("abcd1233", "Favourite Fruits", GraphType.LINE_CHART, ["test@email.com", "admin@systen.com"], "every month"),
-              Graph("jkdfsb3783", "Network Bandwidth - December", GraphType.BAR_CHART, ["user@domain.ca"], "On Data Change")]
+              Graph("abcd1233", "Favourite Fruits", GraphType.LINE_CHART, ["test@email.com", "admin@systen.com"],
+                    "every month"),
+              Graph("jkdfsb3783", "Network Bandwidth - December", GraphType.BAR_CHART, ["user@domain.ca"],
+                    "On Data Change")]
     return graphs
 
 

@@ -2,12 +2,13 @@
 
 {% block script %}
     <script>
+
         $( function() {
 
             $("#emailExample").hide();
-            hideGraphOptions(true);
             $('#pie_options').css('min-height',  $('#line_options').height());
             $('#bar_options').css('min-height',  $('#line_options').height());
+            setGraphTypeOptions();
 
             $("#emailAdd").click(function(){
                 let email = $("#subscriberEmailAdd").val();
@@ -30,25 +31,44 @@
                 $('#previewGraph').prop('disabled', !$(this).val());
             });
 
-            $('#graphTypeSelect').on('change load', function() {
-                hideGraphOptions(false);
-                switch(this.value){
-                    case "pie":
-                        $('#pie_options').show();
-                        break;
-                    case "bar":
-                        $('#bar_options').show();
-                        break;
-                    case "line":
-                        $('#line_options').show();
-                        $('#line_options').css('visibility','visible');
-                        break;
-                    default:
-                        hideGraphOptions(true);
+            $('#graphTypeSelect').change(setGraphTypeOptions);
+
+            $('input[type=radio][name=sendSchedule]').change(function() {
+                if (this.value == 'onDataUpdate') {
+                    $("#cronSched").css('visibility', 'hidden');
+                }
+                else if (this.value == 'setSchedule') {
+                    $("#cronSched").css('visibility', 'visible');
                 }
             });
-
         });
+
+        function generateGraph(){
+            $.post("{{ url_for('generate_graph_preview') }}",
+            $('#graphForm').serialize(),
+            function(data){
+
+            });
+        }
+
+        function setGraphTypeOptions() {
+            hideGraphOptions(false);
+            switch ($('#graphTypeSelect').val()) {
+                case "pie":
+                    $('#pie_options').show();
+                    break;
+                case "bar":
+                    $('#bar_options').show();
+                    break;
+                case "line":
+                    $('#line_options').show();
+                    $('#line_options').css('visibility', 'visible');
+                    break;
+                default:
+                    hideGraphOptions(true);
+            }
+        }
+
         function hideGraphOptions(maintainSpace) {
             {#We want to retain the page space taken up by line chart options because it is the largest one#}
             $('#pie_options').hide();
@@ -69,15 +89,15 @@
     <div class="row justify-content-center page-title odd">
         <h2>Register a New Graph</h2>
     </div>
-    <form>
+    <form id="graphForm" action="{{ url_for("register_graph") }}" method='post'>
         <h3>Graph Configuration</h3>
         <div class="row even">
             <div class="col-sm">
                 <div class="form-group">
                     <label for="dataFileUpload">Data Example</label>
-                    <input type="file" class="form-control-file" id="dataFileUpload">
+                    <input type="file" class="form-control-file" id="dataFileUpload" name="dataFile">
                     <label for="dataFileUpload">Graph Type</label>
-                    <select class="custom-select" id="graphTypeSelect">
+                    <select class="custom-select" id="graphTypeSelect" name="graphType">
                         <option selected>Choose...</option>
                         <option value="pie">Pie Graph</option>
                         <option value="bar">Bar Chart</option>
@@ -87,33 +107,33 @@
                     {#PIE CHART OPTIONS#}
                     <div id="pie_options">
                         <label for="graphTitle">Title</label>
-                        <input id="graphTitle" type="text" class="form-control" >
+                        <input id="graphTitle" name="title" type="text" class="form-control" >
 
                         <label for="customLabels">Custom Labels</label>
                         <small id="customLabelHelp" class="form-text text-muted">If you'd like to use custom labels for the pie graph, enter them as a comma-separated list here</small>
-                        <input id="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
+                        <input id="customLabels" name="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
                     </div>
 
                     {#BAR CHART OPTIONS#}
                     <div id="bar_options">
                         <label for="graphTitle">Title</label>
-                        <input id="graphTitle" type="text" class="form-control" >
+                        <input id="graphTitle" name="title" type="text" class="form-control" >
 
                         <label for="axisLabels">Axis Labels</label>
                         <div id="axisLabels" class="form-row">
                             <div class="col">
                                 <label for="xLabel">X-Axis Label</label>
-                                <input id="xLabel" type="text" class="form-control" >
+                                <input id="xLabel" name="xLabel" type="text" class="form-control" >
                             </div>
                             <div class="col">
                                 <label for="yLabel">Y-Axis Label</label>
-                                <input id="yLabel" type="text" class="form-control" >
+                                <input id="yLabel" name="yLabel" type="text" class="form-control" >
                             </div>
                         </div>
 
                         <label for="customLabels">Custom Labels</label>
                         <small id="customLabelHelp" class="form-text text-muted">If you'd like to use custom bar labels for the graph, enter them as a comma-separated list here</small>
-                        <input id="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
+                        <input id="customLabels" name="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
 
                     </div>
 
@@ -121,27 +141,27 @@
                     <div id="line_options">
 
                         <label for="graphTitle">Title</label>
-                        <input id="graphTitle" type="text" class="form-control" >
+                        <input id="graphTitle" name="title" type="text" class="form-control" >
 
                         <label for="axisLabels">Axis Labels</label>
                         <div id="axisLabels" class="form-row">
                             <div class="col">
                                 <label for="xLabel">X-Axis Label</label>
-                                <input id="xLabel" type="text" class="form-control" >
+                                <input id="xLabel" name="xLabel" type="text" class="form-control" >
                             </div>
                             <div class="col">
                                 <label for="yLabel">Y-Axis Label</label>
-                                <input id="yLabel" type="text" class="form-control" >
+                                <input id="yLabel" name="yLabel" type="text" class="form-control" >
                             </div>
                         </div>
 
                         <label for="customLabels">Custom Labels</label>
                         <small id="customLabelHelp" class="form-text text-muted">If you'd like to use custom line labels for the graph, enter them as a comma-separated list here</small>
-                        <input id="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
+                        <input id="customLabels" name="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
 
-                        <label for="customLabels">X-Axis Data</label>
-                        <small id="customLabelHelp" class="form-text text-muted">Based off the data you uploaded, please select the column which represents the x-axis.</small>
-                        <select id="xAxisColumn" type="text" class="custom-select">
+                        <label for="xAxisColumn">X-Axis Data</label>
+                        <small id="xAxisColumnHelp" class="form-text text-muted">Based off the data you uploaded, please select the column which represents the x-axis.</small>
+                        <select id="xAxisColumn" name="xAxisCol" type="text" class="custom-select">
                             <option selected>Choose...</option>
                         </select>
                     </div>
@@ -151,7 +171,7 @@
             <div class="col-sm">
                 <img src="{{ url_for('static', filename='graph_placeholder.png') }}" width="60%"/>
                 <small id="emailHelp" class="form-text text-muted">Click below to generate a preview for your graph</small>
-                <button id="previewGraph" type="button" class="btn btn-secondary" disabled>Preview</button>
+                <button id="previewGraph" type="button" class="btn btn-secondary" onclick="generateGraph()" disabled>Preview</button>
             </div>
         </div>
 
@@ -159,7 +179,7 @@
         <div class="row even">
             <div class="col-sm">
               <div class="form-group">
-                  <label for="subscriberEmailAdd">Subscriber Emails</label>
+                  <h5>Subscriber Emails</h5>
                   <input type="email" class="form-control" id="subscriberEmailAdd" aria-describedby="emailHelp" placeholder="Enter email">
                   <small id="emailHelp" class="form-text text-muted">Add email subscribers for this graph</small>
                   <button id="emailAdd" type="button" class="btn btn-secondary">Add</button>
@@ -176,26 +196,30 @@
             </div>
         </div>
         <div class="row">
-            <div class="form-group">
-
+            <div class="col-6">
+                <div class="form-group">
+                    <h5>Send Schedule</h5>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" name="sendSchedule" id="setSchedule" value="setSchedule" checked class="custom-control-input">
+                        <label class="custom-control-label" for="setSchedule">Set Schedule</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" name="sendSchedule" id="onDataUpdate" value="onDataUpdate" class="custom-control-input">
+                        <label class="custom-control-label" for="onDataUpdate">On Data Update</label>
+                    </div>
+                    <div id="cronSched" class="input-group mb-3">
+                        <input type="text" id="cron" name="cron" class="form-control" placeholder="0 0 1 * *" aria-label="0 0 1 * *" aria-describedby="cronHelp">
+                        <div class="input-group-append">
+                            <a href="http://crontab.guru" target="_blank"><button class="btn btn-outline-secondary" type="button">Help</button></a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-
-
         <div class="row odd">
-          <div class="form-group">
-            <label for="exampleInputPassword1">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-          </div>
-        </div>
-        <div class="row even">
-          <div class="form-group form-check">
-            <input type="checkbox" class="form-check-input" id="exampleCheck1">
-            <label class="form-check-label" for="exampleCheck1">Check me out</label>
-          </div>
-        </div>
-        <div class="row odd">
-            <button type="submit" class="btn btn-primary">Register New Graph</button>
+            <div class="col-sm">
+                <button type="submit" class="btn btn-primary">Register New Graph</button>
+            </div>
         </div>
     </form>
 {% endblock %}

@@ -1,5 +1,7 @@
 import json
 import boto3
+from botocore.exceptions import ClientError
+
 from ui import config
 
 # Not the same type of lambda lol
@@ -58,7 +60,7 @@ def generate_graph(type, title, csv_name, username,
                                           'Key': filename},
                     ExpiresIn=3600)  # link expires in an hour
 
-       except ClientError as e:
+        except ClientError as e:
            print('ERROR - {}'.format(e))
            return None
 
