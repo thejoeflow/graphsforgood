@@ -25,6 +25,6 @@ aws lambda update-function-code --function-name generate_graph --zip-file fileb:
 rm function.zip
 
 echo "updating function to use layer"
-aws lambda update-function-configuration --function-name generate_graph --layers ${arn} --timeout 10 --memory-size 256 >> aws.log
+aws lambda update-function-configuration --function-name generate_graph --layers ${arn} --timeout 10 --memory-size 256 --runtime python3.7 >> aws.log
 
 echo "Done. AWS results are in aws.log"
