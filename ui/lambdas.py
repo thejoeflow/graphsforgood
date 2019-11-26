@@ -6,9 +6,63 @@ from ui import config
 isOk = lambda code: 200 <= code < 300
 
 
-def generate_graph():
-    graph_img = None
-    return graph_img
+def generate_graph(type, title, csv_name, username,
+                   pie_labels=None,  # pie graph parameter
+                   line_xcol=None, line_ycol=None, line_xlabel=None,
+                   line_ylabel=None, line_xconstr=None,  # line
+                   bar_columns=None, bar_xlabel=None, bar_ylabel=None):  # bar
+    graph_args = {
+            'type': type,
+            'title': title,
+            's3_filename': csv_name,
+            'username': username
+            }
+
+    if type == 'pie':
+        if pie_labels is not None:  # optional
+            graph_args['labels'] = pie_labels
+
+    elif type == 'line':
+        graph_args['x_column'] = line_xcol
+        graph_args['y_column'] = line_ycol
+        if line_xlabel is not None:  # optional
+            graph_args['xlabel'] = line_xlabel
+        if line_ylabel is not None:  # optional
+            graph_args['ylabel'] = line_ylabel
+        if line_xconstr is not None:  # optional
+            graph_args['x_constraint'] = line_xconstr
+
+    elif type == 'bar':
+        graph_args['columns'] = bar_columns
+        if bar_xlabel is not None:
+            graph_args['xlabel'] = bar_xlabel
+        if bar_ylabel is not None:
+            graph_args['ylabel'] = bar_ylabel
+
+    result, resp = call_lambda_function(
+            config.lambda_function_names['generate_graph'], **graph_args)
+
+    if result:
+        # access s3
+        s3 = boto3.resource('s3')
+        bucket_name = list(s3.buckets.all())[0].name
+
+        # parse response from lambda function
+        filename = resp['Payload'].read().decode("utf-8")
+
+        # get a presigned link to graph on s3
+        s3_client = boto3.client('s3')
+        try:
+            graph_link = s3_client.generate_presigned_url(
+                    'get_object', Params={'Bucket': bucket_name,
+                                          'Key': filename},
+                    ExpiresIn=3600)  # link expires in an hour
+
+       except ClientError as e:
+           print('ERROR - {}'.format(e))
+           return None
+
+    return graph_link
 
 
 def save_user(email, firstname, lastname, password_hash, salt):
