@@ -1,11 +1,11 @@
 import boto3
 import os
 import csv
+import numpy
 import matplotlib.pyplot as plt
 
 
 def generate_bar(event):
-
     # extract arguments:
     filename = str()
     if 's3_filename' in event:
@@ -32,7 +32,7 @@ def generate_bar(event):
         title = None
 
     columns = list()
-    if 'colulmns' in event:
+    if 'columns' in event:
         columns = event['columns']
     else:
         print('ERROR - Must specify columns to use for bar graph')
@@ -69,7 +69,38 @@ def generate_bar(event):
         for row in reader:
             data.append(row)
 
-    # TODO: generate the graph
+    # process data a bit:
+    if xlabel is not None:
+        # treat first row as xlabel
+        for i in columns:
+            xlabel.append(data[0][i])
+    else:
+        data.pop(0)
+
+    # convert from string to float
+    values = list()
+    for i in columns:
+        x = data[1][i].strip()
+        if not x.isnumeric():
+            values.append(0.0)
+        else:
+            values.append(float(x))
+
+    # Plot the graph
+    if ylabel is not None:
+        plt.ylabel(ylabel)
+
+    x = list(numpy.arange(len(columns)))
+
+    plt.bar(x, values)
+    plt.xticks(x, xlabel)
+
+    if title is not None:
+        plt.title(title)
+
+    plt.savefig('/tmp/bar.png', format='png')
+
+    bucket.upload_file('/tmp/bar.png', upload_filename)
 
     # remove files from temporary storage
     os.remove('/tmp/tmp.csv')
