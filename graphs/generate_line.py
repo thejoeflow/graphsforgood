@@ -23,7 +23,7 @@ def generate_line(event):
         print('ERROR - Must specify username')
         return 'ERROR'
 
-    upload_filename = filename.rsplit('.', 1)[0] + ".png"
+    upload_filename = filename.rsplit('.', 1)[0] + "_out.png"
 
     title = str()
     if 'title' in event:
