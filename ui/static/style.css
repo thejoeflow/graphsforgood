@@ -2,12 +2,32 @@
     color: red;
 }
 
-h1{
-    color: darkblue;
+.success{
+    color: #16ff39;
 }
 
-.graph-img{
-    width:100%
+h1{
+    color: #154d8b;
+}
+
+.even{
+    background-color: white;
+}
+
+.odd{
+    background-color: white;
+}
+
+.page-title{
+    padding-bottom: 20px;
+}
+
+.form-control{
+    margin-bottom: 30px;
+}
+
+.form-group{
+    margin-bottom: 50px;
 }
 
 div.container{

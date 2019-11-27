@@ -1,3 +1,5 @@
+import re
+
 from ui import webapp
 
 validate_values = {
@@ -22,3 +24,17 @@ def add_validate_values():
     :return: A dictionary containing values needed for validation
     """
     return validate_values
+
+
+def registration(username, password):
+    """
+    Returns True if the username and password meet the required length requirements and the username does not use any
+    forbidden characters
+
+    :param username:
+    :param password:
+    :return: True if username and password are valid, False otherwise
+    """
+    return validate_values['NAME_MIN_LEN'] <= len(username) <= validate_values['NAME_MAX_LEN'] and \
+           validate_values['PWORD_MIN_LEN'] <= len(password) <= validate_values['PWORD_MAX_LEN'] and \
+           re.fullmatch(validate_values['NAME_REGEX'], username, flags=re.IGNORECASE) is not None

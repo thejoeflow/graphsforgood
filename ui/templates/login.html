@@ -4,9 +4,9 @@
 <script>
 $( function() {
     let
-    username = $( "#username" ),
+    email = $( "#email" ),
     password = $( "#password" ),
-    allFields = $( [] ).add( username ).add( password )
+    allFields = $( [] ).add( email ).add( password )
 
     function updateTips( t ) {
       $("#validateTips").text(t).addClass( "ui-state-highlight" );
@@ -39,15 +39,15 @@ $( function() {
     function validateFields() {
       let valid = true;
       allFields.removeClass( "ui-state-error" );
-      valid = valid && checkLength( username, "username", {{NAME_MIN_LEN}}, {{NAME_MAX_LEN}} );
+      valid = valid && checkLength( email, "email", {{NAME_MIN_LEN}}, {{NAME_MAX_LEN}} );
       valid = valid && checkLength( password, "password", {{PWORD_MIN_LEN}}, {{PWORD_MAX_LEN}} );
-      valid = valid && checkRegexp( username, /{{NAME_REGEX}}/i, "Username may only consist of a-z, 0-9, underscores, dashes, and spaces" );
+      valid = valid && checkRegexp( email, /{{NAME_REGEX}}/i, "Username may only consist of a-z, 0-9, underscores, dashes, and spaces" );
       return valid;
     }
 
     $( "#dialog-form" ).dialog({
       autoOpen: false,
-      height: 300,
+      height: 600,
       width: 600,
       modal: true,
         buttons:{
@@ -85,7 +85,7 @@ $( function() {
 
 {% block content %}
 <div class="container">
-    <div class="row justify-content-center" style="padding-bottom: 30px">
+    <div class="row justify-content-center page-title">
         <div class="col">
             <h1>Welcome to Graphs for Good</h1>
             <img src="{{url_for('static', filename='logo.png')}}" width="10%"/>
@@ -94,10 +94,11 @@ $( function() {
     </div>
 
     <div class='error'>{{error_msg if error_msg != None}}</div>
+    <div class='success'>{{msg if msg != None}}</div>
     <form action='{{url_for('login_register')}}' method='post'>
         <div>
-        <label>Username</label>
-        <input type='text' name='username' value='{{username if username  != None}}'>
+        <label>Email</label>
+        <input type='text' name='email' value='{{email if email  != None}}'>
         </div>
         <div>
         <label>Password</label>
@@ -121,12 +122,26 @@ $( function() {
   <form id="register-form" action='{{url_for('register_new_user')}}' method='post'>
     <fieldset>
       <div>
-          <label for="username">Username: </label>
-          <input type="text" name="username" id="username" class="text ui-widget-content ui-corner-all">
+          <label for="email">Email: </label>
+          <input type="text" name="email" id="email" class="text ui-widget-content ui-corner-all form-control">
       </div>
+        <div id="firstLast" class="form-row">
+            <div class="col">
+                <label for="firstname">First Name</label>
+                <input id="firstname" name="firstname" type="text" class="text ui-widget-content ui-corner-all form-control" >
+            </div>
+            <div class="col">
+                <label for="lastname">Last Name</label>
+                <input id="lastname" name="lastname" type="text" class="text ui-widget-content ui-corner-all form-control" >
+            </div>
+        </div>
       <div>
           <label for="password">Password: </label>
-          <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all">
+          <input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all form-control">
+      </div>
+      <div>
+          <label for="passwordConfirm">Password Confirm: </label>
+          <input type="password" name="passwordConfirm" id="passwordConfirm" class="text ui-widget-content ui-corner-all form-control">
       </div>
       <div>
             <!-- Allow form submission with keyboard without duplicating the dialog button -->
