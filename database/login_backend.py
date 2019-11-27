@@ -2,11 +2,14 @@ import boto3
 import random
 import string
 import json
+import datetime
 
 
 from Crypto.Hash import SHA256
 from boto3.dynamodb.conditions import Key, Attr
 
+def date_time():
+    return datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S.%f")
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
@@ -26,6 +29,7 @@ class User:
         self.last_name =json_file.get('Last Name')
         self.password_hash = json_file.get('password_hash')
         self.salt = json_file.get('salt')
+        self.graph = json_file.get('graph')
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -60,13 +64,87 @@ def create_new_user(email_add, first_name, last_name, password):
                 'Last Name': last_name,
                 'password_hash': password_hash,
                 'salt': salt,
+                'graph': {},
             }
         )
     except Exception as e:
         print("Failed to register user with email address provided: " + email_add, e, "\n")
         return False
 
-create_new_user('test@gmail.com', 'shreya', 'rajput', 'password')
+
+def register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels):
+
+
+    date_temp = date_time()
+    date_temp = str(date_temp).replace(' ', '_').replace('/', '_').replace(':', '_').replace('.', '_')
+    graph_id = str(email_add).replace('@', '_').replace('.', '_') + date_temp + str(graph_name)
+
+    try:
+        dynamoTable = dynamodb.Table('Login_table')
+        dynamoTable.update_item(
+        Key={
+        'email': email_add,
+        },
+        UpdateExpression="set #Graph.#id = :name",
+        ExpressionAttributeNames={
+            '#Graph': 'graph',
+            '#id': str(graph_id),
+            # '#name': 'name',
+            # '#subgraph': 'subgraph',
+        },
+        ExpressionAttributeValues = {
+                ':name': {'graph_Name':graph_name,
+                        'inp': s3_inp_path,
+                        'out': s3_out_path,
+                        'receiver_email': email_list,
+                        'cron': cron_sche,
+                        'Async': Async_val,
+                        'Date': date_temp,
+                        'config': {
+                            'graph_type':graph_type,
+                            'graph_title': graph_title,
+                            'x_label': x_label,
+                            'y_label': y_label,
+                            'x_col': x_col,
+                            'y_col': y_col,
+                            'labels': labels,
+
+                        }
+                          },
+            }
+        )
+        return graph_id
+    except Exception as e:
+        print("Failed to register user with email address provided: " + email_add, e, "\n")
+        return False
+
+
+email_add= 'user2@gmail.com'
+graph_name= 'vyhggjg'
+# graph_id= 75647
+s3_inp_path= '/user/shreya/file'
+s3_out_path = '/user/shreya/out'
+graph_type = 'bar'
+email_list = ['armandordorica@gmail.com', 'armando.ordorica@mail.utoronto.ca', 'thejoeflow@gmail.com']
+Async_val = True
+cron_sche = '0/1 * 1/1 * ? *'
+graph_type = 'bar'
+graph_title = 'UC report'
+x_label = 'frequncy'
+y_label= 'car'
+x_col = ['col1', 'col2', 'col3']
+y_col= ['row1', 'row2', 'row3']
+labels= ['bmw', 'tesla', 'jaguar']
+
+
+
+# create_new_user(email_add, 'shreya', 'rajput', 'password')
+# given_id = register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels)
+#
+# print(given_id)
+
+
+
 
 def get_user(email_add):
     try:
@@ -116,9 +194,28 @@ def authenticate(email, password):
         return False
 
 
+attribute = 'config'
+def get_registered_graph(email_add, graph_id, attribute):
+    user = User(get_user(email_add))
+    # user = User(check)
+    value = user.graph
+    return value.get(str(graph_id)).get(attribute)
 
 
+def get_all_graph(email_add):
+    '''Returns array of all the graph id's present'''
+    user = User(get_user(email_add))
+    # user = User(check)
+    value = user.graph
+    # graphs = value.keys()
+    dict ={}
+    for key, value in value.items():
 
+        dict.update({key: get_registered_graph(email_add, key, attribute)})
+    return dict
+
+# print(get_all_graph(email_add))
+# get_registered_graph(email_add, graph_id, attribute)
 
 # create_new_user('shreya3243@gmail.com', 'molu', 'rajput', '1234')
 # check = authenticate('shreya3243@gmail.com', '1234')
