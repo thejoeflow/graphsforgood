@@ -60,8 +60,10 @@ Function2 : get_user()
 
 import json
 import boto3
+import random
+import string
 
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
 dynamoTable = dynamodb.Table('Login_table')
@@ -80,10 +82,7 @@ def lambda_handler(event, context):
             )
             return response['Item']
         else:
-            return {
-            'statusCode': 404,
-            'body': json.dumps("User {} not found".format(event['email_add']))
-            }
+            return False
     except Exception as e:
         print("Failed to retrieve user: " + event['email_add'], e, "\n")
         return {
