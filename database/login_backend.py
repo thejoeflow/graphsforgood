@@ -3,6 +3,7 @@ import random
 import string
 import json
 import datetime
+import os
 
 
 from Crypto.Hash import SHA256
@@ -202,6 +203,9 @@ def get_registered_graph(email_add, graph_id, attribute):
     return value.get(str(graph_id)).get(attribute)
 
 
+print(get_registered_graph('user2@gmail.com', 'user2_gmail_com2019_11_27_01_17_46_095578vyhggjg', 'cron'))
+
+
 def get_all_graph(email_add):
     '''Returns array of all the graph id's present'''
     user = User(get_user(email_add))
@@ -220,3 +224,36 @@ def get_all_graph(email_add):
 # create_new_user('shreya3243@gmail.com', 'molu', 'rajput', '1234')
 # check = authenticate('shreya3243@gmail.com', '1234')
 # print(check)
+
+
+bucket = list(boto3.resource('s3').buckets.all())[0]
+
+
+def upload_file_inp(filename, email_add):
+
+
+    date_temp = date_time()
+    date_temp = str(date_temp).replace(' ', '_').replace('/', '_').replace(':', '_').replace('.', '_')
+    name = str(email_add).replace('@', '_').replace('.', '_')
+    # target_temp = os.path.join('temp', name)
+    file, ext = filename.rsplit('.', 1)
+    InputFile_s3= 'temp'+ "/" + name + "/" + date_temp + "." + ext
+    ''' filename: string - filename of local file to upload
+        s3_name: string - target key for the uploaded file (ex:tmp/usr/pie.png)
+    '''
+    bucket.upload_file(filename, InputFile_s3)
+    return InputFile_s3
+
+
+def upload_file_out(inp_file_name, out_filename, email_add):
+    name = str(email_add).replace('@', '_').replace('.', '_')
+    file, ext_temp = inp_file_name.rsplit('.', 1)
+    out, ext = out_filename.rsplit('.', 1)
+    Output_File_s3 = 'temp' + "/" + name + "/" + file + "_out" + "." + ext
+
+    bucket.upload_file(out_filename, s3_name)
+    return Output_File_s3
+
+# check = upload_file_inp('2019_11_27_16_06_49_262655.csv', 'shreya@gmail.com')
+# print(check)
+# print(upload_file_out('2019_11_27_16_06_49_262655.csv', 'images.jpg', 'shreya@gmail.com'))
