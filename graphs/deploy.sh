@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "checking for lambda function"
+
 echo "checking for lambda layer"
 layernum=$(aws lambda list-layers | python -c "import sys,json; print(len(json.load(sys.stdin)['Layers']))")
 

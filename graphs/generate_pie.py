@@ -83,7 +83,7 @@ def generate_pie(event):
     plt.savefig('/tmp/pie.png', format='png')
 
     # upload to s3
-    upload_filename = 'tmp/'+username+'/pie.png'
+    upload_filename = filename.rsplit('.', 1)[0] + ".png"
     bucket.upload_file('/tmp/pie.png', upload_filename)
 
     # remove files from temporary storage
