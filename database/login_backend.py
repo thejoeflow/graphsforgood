@@ -72,6 +72,24 @@ def create_new_user(email_add, first_name, last_name, password):
         print("Failed to register user with email address provided: " + email_add, e, "\n")
         return False
 
+def move_file(inp, out, graph_id, email_add):
+    ''' src: string - key of s3 file to move
+        target: string - key of s3 file to move to
+    '''
+    username = str(email_add).replace('@', '_').replace('.', '_')
+    target_inp = username + "/" + str(graph_id) + "/" + 'inp' + "/" + inp.split('/')[2]
+    bucket.copy({'Bucket': bucket.name,
+                 'Key': inp},
+                target_inp)
+    bucket.delete_objects(Delete={'Objects': [{'Key': inp}]})
+
+    target_out = username + "/" + str(graph_id) + "/" + 'out' + "/" + out.split('/')[2]
+    bucket.copy({'Bucket': bucket.name,
+                 'Key': out},
+                target_out)
+    bucket.delete_objects(Delete={'Objects': [{'Key': out}]})
+
+    return target_inp, target_out
 
 def register_new_graph(email_add, graph_name, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body, inputs3_temp_location, outputs3_temp_location):
 
@@ -81,6 +99,7 @@ def register_new_graph(email_add, graph_name, email_list, Async_val, cron_sche, 
     graph_id = str(email_add).replace('@', '_').replace('.', '_') + date_temp + str(graph_name)
 
     #move s3
+
     s3_inp_path, s3_out_path = move_file(inputs3_temp_location, outputs3_temp_location, graph_id, email_add)
 
     try:
@@ -131,7 +150,7 @@ graph_name= 'vyhggjg'
 s3_inp_path= '/user/shreya/file'
 s3_out_path = '/user/shreya/out'
 graph_type = 'bar'
-email_list = ['armandordorica@gmail.com']
+email_list = ['armandordorica@gmail.com', 'armando.ordorica@mail.utoronto.ca', 'thejoeflow@gmail.com']
 Async_val = True
 cron_sche = '0/1 * 1/1 * ? *'
 graph_type = 'bar'
@@ -142,14 +161,14 @@ x_col = ['col1', 'col2', 'col3']
 y_col= ['row1', 'row2', 'row3']
 labels= ['bmw', 'tesla', 'jaguar']
 subject = 'Hello from Graphs for Good'
-body = 'Hi, there this your subscribed graph report. Enjoy'
+body = ['Hi, there this your subscribed graph report. Enjoy']
 
 
 
 # create_new_user(email_add, 'shreya', 'rajput', 'password')
 given_id = register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body)
-# 
-print(given_id)
+#
+# print(given_id)
 
 
 
@@ -266,24 +285,7 @@ def upload_file_out(inp_file_name, out_filename, email_add):
 # print(check)
 # out = upload_file_out('2019_11_28_10_27_24_425159.csv', 'images.jpg', 'shreya@gmail.com')
 
-def move_file(inp, out, graph_id, email_add):
-    ''' src: string - key of s3 file to move
-        target: string - key of s3 file to move to
-    '''
-    username = str(email_add).replace('@', '_').replace('.', '_')
-    target_inp = username + "/" + str(graph_id) + "/" + 'inp' + "/" + inp.split('/')[2]
-    bucket.copy({'Bucket': bucket.name,
-                 'Key': inp},
-                target_inp)
-    bucket.delete_objects(Delete={'Objects': [{'Key': inp}]})
 
-    target_out = username + "/" + str(graph_id) + "/" + 'out' + "/" + out.split('/')[2]
-    bucket.copy({'Bucket': bucket.name,
-                 'Key': out},
-                target_out)
-    bucket.delete_objects(Delete={'Objects': [{'Key': out}]})
-
-    return target_inp, target_out
 
 
 # print(move_file("temp/test_gmail_com/2019_11_28_10_27_09_887153.csv", "temp/test_gmail_com/2019_11_28_10_27_24_425159.csv", "test_gmail_com2019_11_28_02_22_44_718252", "test@gmail.com"))
