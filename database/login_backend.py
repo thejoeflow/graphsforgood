@@ -73,12 +73,15 @@ def create_new_user(email_add, first_name, last_name, password):
         return False
 
 
-def register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body):
+def register_new_graph(email_add, graph_name, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body, inputs3_temp_location, outputs3_temp_location):
 
 
     date_temp = date_time()
     date_temp = str(date_temp).replace(' ', '_').replace('/', '_').replace(':', '_').replace('.', '_')
     graph_id = str(email_add).replace('@', '_').replace('.', '_') + date_temp + str(graph_name)
+
+    #move s3
+    s3_inp_path, s3_out_path = move_file(inputs3_temp_location, outputs3_temp_location, graph_id, email_add)
 
     try:
         dynamoTable = dynamodb.Table('Login_table')
@@ -122,7 +125,7 @@ def register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_li
         return False
 
 
-email_add= 'user2@gmail.com'
+email_add= 'shreya@gmail.com'
 graph_name= 'vyhggjg'
 # graph_id= 75647
 s3_inp_path= '/user/shreya/file'
@@ -199,15 +202,14 @@ def authenticate(email, password):
         return False
 
 
-attribute = 'config'
+attribute = 'out'
 def get_registered_graph(email_add, graph_id, attribute):
-    user = User(get_user(email_add))
-    # user = User(check)
-    value = user.graph
-    return value.get(str(graph_id)).get(attribute)
+    user = get_user(email_add)
+    user = User(user)
+    return user.graph.get(str(graph_id)).get(attribute)
 
 
-# print(get_registered_graph('user2@gmail.com', 'user2_gmail_com2019_11_27_01_17_46_095578vyhggjg', 'cron'))
+print(get_registered_graph('shreya@gmail.com', 'shreya_gmail_com2019_11_28_22_02_17_411953', attribute))
 
 
 def get_all_graph(email_add):
@@ -230,7 +232,8 @@ def get_all_graph(email_add):
 # print(check)
 
 
-bucket = list(boto3.resource('s3').buckets.all())[0]
+bucket_name = 'shreyarajput'
+bucket = boto3.resource('s3').Bucket(bucket_name)
 
 
 def upload_file_inp(filename, email_add):
@@ -258,6 +261,31 @@ def upload_file_out(inp_file_name, out_filename, email_add):
     bucket.upload_file(out_filename, Output_File_s3)
     return Output_File_s3
 
-# check = upload_file_inp('airbnb.csv', 'shreya@gmail.com')
+# check = upload_file_inp('apple'
+#                         '.csv', 'test@gmail.com')
 # print(check)
-# print(upload_file_out('2019_11_27_18_00_05_173675.csv', 'images.jpg', 'shreya@gmail.com'))
+# out = upload_file_out('2019_11_28_10_27_24_425159.csv', 'images.jpg', 'shreya@gmail.com')
+
+def move_file(inp, out, graph_id, email_add):
+    ''' src: string - key of s3 file to move
+        target: string - key of s3 file to move to
+    '''
+    username = str(email_add).replace('@', '_').replace('.', '_')
+    target_inp = username + "/" + str(graph_id) + "/" + 'inp' + "/" + inp.split('/')[2]
+    bucket.copy({'Bucket': bucket.name,
+                 'Key': inp},
+                target_inp)
+    bucket.delete_objects(Delete={'Objects': [{'Key': inp}]})
+
+    target_out = username + "/" + str(graph_id) + "/" + 'out' + "/" + out.split('/')[2]
+    bucket.copy({'Bucket': bucket.name,
+                 'Key': out},
+                target_out)
+    bucket.delete_objects(Delete={'Objects': [{'Key': out}]})
+
+    return target_inp, target_out
+
+
+# print(move_file("temp/test_gmail_com/2019_11_28_10_27_09_887153.csv", "temp/test_gmail_com/2019_11_28_10_27_24_425159.csv", "test_gmail_com2019_11_28_02_22_44_718252", "test@gmail.com"))
+# print(check)
+# print(out)
