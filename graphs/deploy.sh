@@ -28,21 +28,21 @@ if [ "$exist" == "n" ]; then
   aws lambda create-function --function-name "generate_graph" --runtime "python3.7" --handler "generate_graph.lambda_handler" --role arn:aws:iam::868512170571:role/lambda_s3_ses --layers ${arn} --zip-file fileb://function.zip > aws.log
 
 
-#else
-#  echo "  generate_graph already exists, updating code"
-#  echo "    zipping source code"
-#  if [ -f "function.zip" ]; then
-#    rm function.zip
-#  fi
-#  zip function.zip generate_graph.py generate_pie.py generate_bar.py generate_line.py > /dev/null
-#
-#  echo "    updating function code"
-#  aws lambda update-function-code --function-name generate_graph --zip-file fileb://function.zip > aws.log
-#  rm function.zip
-#
-#  echo "    setting function configuration"
-#  aws lambda update-function-configuration --function-name generate_graph --layers ${arn} --timeout 10 --memory-size 256 --runtime python3.7 >> aws.log
-#
+else
+  echo "  generate_graph already exists, updating code"
+  echo "    zipping source code"
+  if [ -f "function.zip" ]; then
+    rm function.zip
+  fi
+  zip function.zip generate_graph.py generate_pie.py generate_bar.py generate_line.py > /dev/null
+
+  echo "    updating function code"
+  aws lambda update-function-code --function-name generate_graph --zip-file fileb://function.zip > aws.log
+  rm function.zip
+
+  echo "    setting function configuration"
+  aws lambda update-function-configuration --function-name generate_graph --layers ${arn} --timeout 10 --memory-size 256 --runtime python3.7 >> aws.log
+
 fi
 
 echo "Done. AWS results are in aws.log"
