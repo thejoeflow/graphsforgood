@@ -25,7 +25,7 @@ if [ "$exist" == "n" ]; then
   zip function.zip generate_graph.py generate_pie.py generate_bar.py generate_line.py > /dev/null
 
   echo "    creating lambda function..."
-  aws lambda create-function --function-name "generate_graph" --runtime "python3.7" --handler "generate_graph.lambda_handler" --role arn:aws:iam::868512170571:role/lambda_s3_ses --layers ${arn} --zip-file fileb://function.zip > aws.log
+  aws lambda create-function --function-name "generate_graph" --runtime "python3.7" --handler "generate_graph.lambda_handler" --role arn:aws:iam::868512170571:role/lambda_s3_ses --layers ${arn} --zip-file fileb://function.zip --timeout 10 --memory-size 256 > aws.log
 
 
 else
