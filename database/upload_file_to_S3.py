@@ -1,6 +1,7 @@
 import boto3
 import datetime
-bucket = list(boto3.resource('s3').buckets.all())[0]
+bucket_name = 'shreyarajput'
+bucket = boto3.resource('s3').Bucket(bucket_name)
 
 
 def upload_file_inp(filename, email_add):

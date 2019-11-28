@@ -9,7 +9,6 @@ sys.path.insert(1, '../database')
 import login_backend
 
 
-
 def create_cloudwatch_rule(input_json):
     rule_name = ast.literal_eval(input_json)['rule_name']
     scheduleExpression = ast.literal_eval(input_json)['scheduleExpression']
@@ -51,26 +50,30 @@ def send_email(input_json):
 
 ## Input Parameters
 
-email_add = 'user4@gmail.com'
-graph_id = 'user4_gmail_com2019_11_27_17_31_18_052000graph1'
+email_add = 'user2@gmail.com'
+graph_id = 'user2_gmail_com2019_11_27_21_29_55_286841vyhggjg'
 
 cron = login_backend.get_registered_graph(email_add, graph_id, 'cron')
 receiver_email = login_backend.get_registered_graph(email_add, graph_id, 'receiver_email')
 file_path = login_backend.get_registered_graph(email_add, graph_id, 'out')
 graphname = login_backend.get_registered_graph(email_add, graph_id, 'graph_Name')
-
-
+body = login_backend.get_registered_graph(email_add, graph_id, 'body')
+subject = login_backend.get_registered_graph(email_add, graph_id, 'subject')
+default_email = 'armandordorica@gmail.com'
 
 ## Testing
 input_dictionary = {
     "rule_name": graph_id,
     "scheduleExpression": cron,
-    "bucket_name" : "lambda-ses-a3",
-    "sender" : email_add,
+    "bucket_name": "lambda-ses-a3",
+    "sender" : default_email,
     "recipients" : receiver_email,
-    "subject":  "TESTING S3 TO EMAIL FUNCTION from Joes account and passing input parameters to lambda as JSON from Cloudwatch and boto3",
-    "body_html" : "<h1>Testing S3 to email function from Joes account and lambda through Cloudwatch and boto3</h1>"
+    "subject":  subject,
+    "body_html" : body
 }
+
+for k, v in input_dictionary.items():
+    print(k, v)
 
 
 send_email(input_dictionary);
