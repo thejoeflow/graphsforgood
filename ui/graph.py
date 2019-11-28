@@ -1,8 +1,13 @@
+import datetime
 import io
 import os
 from random import randint
 from enum import Enum
-from flask import render_template, send_file, url_for, request
+
+import boto3
+
+from database import login_backend
+from flask import render_template, send_file, url_for, request, session
 from PIL import Image
 from ui import webapp, lambdas
 
@@ -15,33 +20,7 @@ def new_graph():
 @webapp.route("/new_graph", methods=['POST'])
 def register_graph():
     form = request.form
-    csvFile = form['dataFile']
-    graph_type = form['graphType']
-    if graph_type == "pie":
-        i = 0
-    elif graph_type == "bar":
-        i = 1
-    else: # line chart
-        i = 2
-
-    title = form.getlist('title')[i]
-    customLabels = form.getlist('title')[i]
-    xAxisCol = form['xAxisCol']
-    if i == 1 or i == 2:
-        xLabel = form.getlist('xLabel')[i]
-        yLabel = form.getlist('yLabel')[i]
-
-    subscribers = form.getlist('subscribers')
-    async = form['sendSchedule'] == 'onDataUpdate'
-    cron = form['cron']
-
-    return render_template("graph_register.html")
-
-
-@webapp.route("/generate_graph", methods=['POST'])
-def generate_graph_preview():
-    form = request.form
-    csvFile = form['dataFile']
+    csvFile = request.files['dataFile']
     graph_type = form['graphType']
     if graph_type == "pie":
         i = 0
@@ -51,19 +30,70 @@ def generate_graph_preview():
         i = 2
 
     title = form.getlist('title')[i]
-    customLabels = form.getlist('title')[i]
+    customLabels = form.getlist('customLabels')[i]
     xAxisCol = form['xAxisCol']
     if i == 1 or i == 2:
-        xLabel = form.getlist('xLabel')[i]
-        yLabel = form.getlist('yLabel')[i]
+        xLabel = form.getlist('xLabel')[i - 1]
+        yLabel = form.getlist('yLabel')[i - 1]
 
     subscribers = form.getlist('subscribers')
+    subscribers.remove('email')  # Remove placeholder email
+
     async = form['sendSchedule'] == 'onDataUpdate'
     cron = form['cron']
 
-    lambdas.generate_graph(graph_type, )
+    return render_template("graph_register.html")
 
-    return
+
+@webapp.route("/generate_graph", methods=['POST'])
+def generate_graph_preview():
+    form = request.form
+    csvFile = request.files['dataFile']
+
+    graph_type = form['graphType']
+    if graph_type == "pie":
+        i = 0
+    elif graph_type == "bar":
+        i = 1
+    else:  # line chart
+        i = 2
+
+    title = form.getlist('title')[i]
+    customLabels = form.getlist('customLabels')[i]
+    xAxisCol = form.get('xAxisCol')
+    if i == 1 or i == 2:
+        xLabel = form.getlist('xLabel')[i - 1]
+        yLabel = form.getlist('yLabel')[i - 1]
+    else:
+        xLabel = None
+        yLabel = None
+
+    subscribers = form.getlist('subscribers')
+    subscribers.remove('email')  # Remove placeholder email
+
+    async = form['sendSchedule'] == 'onDataUpdate'
+    cron = form['cron']
+
+    username = session['email']
+    s3_path = upload_to_s3(csvFile, username)
+    graph_img_link = lambdas.generate_graph(graph_type, title, s3_path, username,
+                                            labels=customLabels, line_xcol=xAxisCol,
+                                            xlabel=xLabel, ylabel=yLabel)
+    return graph_img_link
+
+
+def upload_to_s3(file, user_email):
+    bucket = list(boto3.resource('s3').buckets.all())[0]
+    filename, ext = file.filename.rsplit('.', 1)
+    name = str(user_email).replace('@', '_').replace('.', '_')
+    s3_path = 'temp' + "/" + name + "/" + new_file_timestamp() + "." + ext
+    bucket.put_object(Key=s3_path, Body=file)
+    return s3_path
+
+
+def new_file_timestamp():
+    date_temp = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S.%f")
+    return str(date_temp).replace(' ', '_').replace('/', '_').replace(':', '_').replace('.', '_')
 
 
 @webapp.route("/graph/<id>")

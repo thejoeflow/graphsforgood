@@ -9,10 +9,9 @@ isOk = lambda code: 200 <= code < 300
 
 
 def generate_graph(type, title, csv_name, username,
-                   pie_labels=None,  # pie graph parameter
-                   line_xcol=None, line_ycol=None, line_xlabel=None,
-                   line_ylabel=None, line_xconstr=None,  # line
-                   bar_columns=None, bar_xlabel=None, bar_ylabel=None):  # bar
+                   labels=None, line_xcol=None, line_ycol=None, xlabel=None,
+                   ylabel=None, line_xconstr=None,
+                   bar_columns=None):
     graph_args = {
             'type': type,
             'title': title,
@@ -21,25 +20,25 @@ def generate_graph(type, title, csv_name, username,
             }
 
     if type == 'pie':
-        if pie_labels is not None:  # optional
-            graph_args['labels'] = pie_labels
+        if empty_string(labels):  # optional
+            graph_args['labels'] = labels
 
     elif type == 'line':
         graph_args['x_column'] = line_xcol
         graph_args['y_column'] = line_ycol
-        if line_xlabel is not None:  # optional
-            graph_args['xlabel'] = line_xlabel
-        if line_ylabel is not None:  # optional
-            graph_args['ylabel'] = line_ylabel
-        if line_xconstr is not None:  # optional
+        if empty_string(xlabel):  # optional
+            graph_args['xlabel'] = xlabel
+        if empty_string(ylabel):  # optional
+            graph_args['ylabel'] = ylabel
+        if empty_string(line_xconstr):  # optional
             graph_args['x_constraint'] = line_xconstr
 
     elif type == 'bar':
         graph_args['columns'] = bar_columns
-        if bar_xlabel is not None:
-            graph_args['xlabel'] = bar_xlabel
-        if bar_ylabel is not None:
-            graph_args['ylabel'] = bar_ylabel
+        if empty_string(xlabel):
+            graph_args['xlabel'] = xlabel
+        if empty_string(ylabel):
+            graph_args['ylabel'] = ylabel
 
     result, resp = call_lambda_function(
             config.lambda_function_names['generate_graph'], **graph_args)
@@ -50,12 +49,12 @@ def generate_graph(type, title, csv_name, username,
         bucket_name = list(s3.buckets.all())[0].name
 
         # parse response from lambda function
-        filename = resp['Payload'].read().decode("utf-8")
+        filename = resp['Payload'].read().decode("utf-8").strip("\"")
         if filename == 'ERROR':
             return None
 
         # get a presigned link to graph on s3
-        s3_client = boto3.client('s3')
+        s3_client = boto3.client('s3', region_name="us-east-1")
         try:
             graph_link = s3_client.generate_presigned_url(
                     'get_object', Params={'Bucket': bucket_name,
@@ -68,6 +67,8 @@ def generate_graph(type, title, csv_name, username,
 
     return graph_link
 
+def empty_string(s):
+    return s and s.strip()
 
 def save_user(email, firstname, lastname, password_hash, salt):
     user = {
@@ -86,7 +87,11 @@ def get_user(email):
         "email_add": email
     }
     result, resp = call_lambda_function(config.lambda_function_names['get_user'], **user)
-    return None if resp.get('Item') is None else User(resp['Item'])
+    if resp.get('Payload') is None:
+        return None
+    else:
+        json_str = resp['Payload'].read().decode("utf-8")
+        return User(json.loads(json_str))
 
 
 class User:
@@ -99,7 +104,7 @@ class User:
         self.salt = json_file.get('salt')
 
 
-# def register_new_graph():
+# def register_new_graph():line_ylabel
 #     {'name': string,
 #      'user_email': string,
 #     's3_data_file': string,

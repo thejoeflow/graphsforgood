@@ -16,33 +16,13 @@ arn="$(aws lambda list-layers | python -c "import sys,json; l=json.load(sys.stdi
 echo "checking for lambda function"
 exist="$(aws lambda list-functions | python -c "import sys,json; d=json.load(sys.stdin); n=next((f for f in d['Functions'] if f['FunctionName']=='generate_graph'),None); print('y') if n is not None else print('n')")"
 
-if [ "$exist" == "n" ]; then 
-  echo "  creating lambda function generate_graph"
-  echo "    zipping source code"
-  if [ -f "function.zip" ]; then
-    rm function.zip
-  fi
-  zip function.zip generate_graph.py generate_pie.py generate_bar.py generate_line.py > /dev/null
-
-  echo "    creating lambda function..."
-  aws lambda create-function --function-name "generate_graph" --runtime "python3.7" --handler "generate_graph.lambda_handler" --role arn:aws:iam::868512170571:role/lambda_s3_ses --layers ${arn} --zip-file fileb://function.zip --timeout 10 --memory-size 256 > aws.log
-
-
-else
-  echo "  generate_graph already exists, updating code"
-  echo "    zipping source code"
-  if [ -f "function.zip" ]; then
-    rm function.zip
-  fi
-  zip function.zip generate_graph.py generate_pie.py generate_bar.py generate_line.py > /dev/null
-
-  echo "    updating function code"
-  aws lambda update-function-code --function-name generate_graph --zip-file fileb://function.zip > aws.log
+echo "  creating lambda function generate_graph"
+echo "    zipping source code"
+if [ -f "function.zip" ]; then
   rm function.zip
-
-  echo "    setting function configuration"
-  aws lambda update-function-configuration --function-name generate_graph --layers ${arn} --timeout 10 --memory-size 256 --runtime python3.7 >> aws.log
-
 fi
+zip function.zip generate_graph.py generate_pie.py generate_bar.py generate_line.py > /dev/null
 
+echo "    creating lambda function..."
+aws lambda create-function --function-name "generate_graph" --runtime "python3.7" --handler "generate_graph.lambda_handler" --role arn:aws:iam::868512170571:role/lambda_s3_ses --layers ${arn} --zip-file fileb://function.zip --timeout 10 --memory-size 256 > aws.log
 echo "Done. AWS results are in aws.log"

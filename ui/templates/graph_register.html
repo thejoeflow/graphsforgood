@@ -44,10 +44,19 @@
         });
 
         function generateGraph(){
-            $.post("{{ url_for('generate_graph_preview') }}",
-            $('#graphForm').serialize(),
-            function(data){
+            var formData = new FormData($('#graphForm')[0]);
+            $.ajax({
+                url: "{{ url_for('generate_graph_preview') }}",
+                type: 'POST',
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
 
+                success: function (data) {
+                    console.log(data);
+                    $("#graphPreview").attr("src", data);
+                }
             });
         }
 
@@ -89,7 +98,7 @@
     <div class="row justify-content-center page-title odd">
         <h2>Register a New Graph</h2>
     </div>
-    <form id="graphForm" action="{{ url_for("register_graph") }}" method='post'>
+    <form id="graphForm" action="{{ url_for("register_graph") }}" enctype="multipart/form-data" method='post'>
         <h3>Graph Configuration</h3>
         <div class="row even">
             <div class="col-sm">
@@ -161,15 +170,14 @@
 
                         <label for="xAxisColumn">X-Axis Data</label>
                         <small id="xAxisColumnHelp" class="form-text text-muted">Based off the data you uploaded, please select the column which represents the x-axis.</small>
-                        <select id="xAxisColumn" name="xAxisCol" type="text" class="custom-select">
-                            <option selected>Choose...</option>
+                        <select id="xAxisColumn" name="xAxisCol" type="text" class="custom-select" placeholder="Choose...">
                         </select>
                     </div>
 
                 </div>
             </div>
             <div class="col-sm">
-                <img src="{{ url_for('static', filename='graph_placeholder.png') }}" width="60%"/>
+                <img id="graphPreview" src="{{ url_for('static', filename='graph_placeholder.png') }}" width="60%"/>
                 <small id="emailHelp" class="form-text text-muted">Click below to generate a preview for your graph</small>
                 <button id="previewGraph" type="button" class="btn btn-secondary" onclick="generateGraph()" disabled>Preview</button>
             </div>
