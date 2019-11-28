@@ -128,7 +128,7 @@ graph_name= 'vyhggjg'
 s3_inp_path= '/user/shreya/file'
 s3_out_path = '/user/shreya/out'
 graph_type = 'bar'
-email_list = ['armandordorica@gmail.com', 'armando.ordorica@mail.utoronto.ca', 'thejoeflow@gmail.com']
+email_list = ['armandordorica@gmail.com']
 Async_val = True
 cron_sche = '0/1 * 1/1 * ? *'
 graph_type = 'bar'
@@ -138,15 +138,15 @@ y_label= 'car'
 x_col = ['col1', 'col2', 'col3']
 y_col= ['row1', 'row2', 'row3']
 labels= ['bmw', 'tesla', 'jaguar']
-subject = ['Hello from Graphs for Good']
-body = ['Hi, there this your subscribed graph report. Enjoy']
+subject = 'Hello from Graphs for Good'
+body = 'Hi, there this your subscribed graph report. Enjoy'
 
 
 
 # create_new_user(email_add, 'shreya', 'rajput', 'password')
-# given_id = register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body)
-#
-# print(given_id)
+given_id = register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body)
+# 
+print(given_id)
 
 
 
