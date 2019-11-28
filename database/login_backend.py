@@ -73,7 +73,7 @@ def create_new_user(email_add, first_name, last_name, password):
         return False
 
 
-def register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels):
+def register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body):
 
 
     date_temp = date_time()
@@ -101,6 +101,8 @@ def register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_li
                         'cron': cron_sche,
                         'Async': Async_val,
                         'Date': date_temp,
+                        'subject': subject,
+                        'body': body,
                         'config': {
                             'graph_type':graph_type,
                             'graph_title': graph_title,
@@ -136,11 +138,13 @@ y_label= 'car'
 x_col = ['col1', 'col2', 'col3']
 y_col= ['row1', 'row2', 'row3']
 labels= ['bmw', 'tesla', 'jaguar']
+subject = ['Hello from Graphs for Good']
+body = ['Hi, there this your subscribed graph report. Enjoy']
 
 
 
 # create_new_user(email_add, 'shreya', 'rajput', 'password')
-# given_id = register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels)
+# given_id = register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body)
 #
 # print(given_id)
 
@@ -203,7 +207,7 @@ def get_registered_graph(email_add, graph_id, attribute):
     return value.get(str(graph_id)).get(attribute)
 
 
-print(get_registered_graph('user2@gmail.com', 'user2_gmail_com2019_11_27_01_17_46_095578vyhggjg', 'cron'))
+# print(get_registered_graph('user2@gmail.com', 'user2_gmail_com2019_11_27_01_17_46_095578vyhggjg', 'cron'))
 
 
 def get_all_graph(email_add):
@@ -251,9 +255,9 @@ def upload_file_out(inp_file_name, out_filename, email_add):
     out, ext = out_filename.rsplit('.', 1)
     Output_File_s3 = 'temp' + "/" + name + "/" + file + "_out" + "." + ext
 
-    bucket.upload_file(out_filename, s3_name)
+    bucket.upload_file(out_filename, Output_File_s3)
     return Output_File_s3
 
-# check = upload_file_inp('2019_11_27_16_06_49_262655.csv', 'shreya@gmail.com')
+# check = upload_file_inp('airbnb.csv', 'shreya@gmail.com')
 # print(check)
-# print(upload_file_out('2019_11_27_16_06_49_262655.csv', 'images.jpg', 'shreya@gmail.com'))
+# print(upload_file_out('2019_11_27_18_00_05_173675.csv', 'images.jpg', 'shreya@gmail.com'))
