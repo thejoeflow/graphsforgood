@@ -90,10 +90,10 @@ def get_user(email):
         "email_add": email
     }
     result, resp = call_lambda_function(config.lambda_function_names['get_user'], **user)
-    if resp.get('Item') is None:
+    if resp.get('Payload') is None:
         return None
     else:
-        json_str = resp['Item'].read().decode("utf-8")
+        json_str = resp['Payload'].read().decode("utf-8")
         return User(json.loads(json_str))
 
 
