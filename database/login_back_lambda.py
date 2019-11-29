@@ -256,11 +256,7 @@ expected Input:
   "body": "here is your graph",
   "x_label": "frequncy",
   "y_label": "car",
-  "x_col": [
-    "col1",
-    "col2",
-    "col3"
-  ],
+  "x_col": int,
   "y_col": [
     "row1",
     "row2",

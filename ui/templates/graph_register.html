@@ -2,10 +2,11 @@
 
 {% block script %}
     <script>
-
         $( function() {
 
             $("#emailExample").hide();
+            $("#yColumnsBar").multiselect();
+            $("#yColumnsLine").multiselect();
             $('#pie_options').css('min-height',  $('#line_options').height());
             $('#bar_options').css('min-height',  $('#line_options').height());
             setGraphTypeOptions();
@@ -28,7 +29,18 @@
             });
 
             $('#dataFileUpload').on("change", function() {
-                $('#previewGraph').prop('disabled', !$(this).val());
+                $('#previewGraph').prop('disabled', false);
+
+                const fr = new FileReader();
+
+                fr.onload = (function(reader)
+                {
+                    return function()
+                    {
+                        populateXAxisSelect(reader.result);
+                    }
+                })(fr);
+                fr.readAsText($(this)[0].files[0]);
             });
 
             $('#graphTypeSelect').change(setGraphTypeOptions);
@@ -43,6 +55,21 @@
             });
         });
 
+        function populateXAxisSelect(data) {
+            var allTextLines = data.split(/\r\n|\n/); // Assuming CSV file with row linebreaks
+            var headers = allTextLines[0].split(',');
+
+            $.each(headers, function( i, h ) {
+                var o = new Option(h, i);
+                $(o).html(h);
+                $("#xAxisColumn").append($(o).clone());
+                $("#yColumnsBar").append($(o).clone());
+                $("#yColumnsLine").append($(o));
+            });
+                $("#yColumnsBar").multiselect('rebuild');
+                $("#yColumnsLine").multiselect('rebuild');
+        }
+
         function generateGraph(){
             var formData = new FormData($('#graphForm')[0]);
             $.ajax({
@@ -54,8 +81,9 @@
                 processData: false,
 
                 success: function (data) {
-                    console.log(data);
-                    $("#graphPreview").attr("src", data);
+                    if(data){
+                        $("#graphPreview").attr("src", data);
+                    }
                 }
             });
         }
@@ -144,6 +172,12 @@
                         <small id="customLabelHelp" class="form-text text-muted">If you'd like to use custom bar labels for the graph, enter them as a comma-separated list here</small>
                         <input id="customLabels" name="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
 
+                        <div>
+                            <label for="yColumnsBar">Columns To Plot</label>
+                            <small id="yColumnsBarHelp" class="form-text text-muted">Based off the data uploaded, please select the columns you'd like to plot</small>
+                            <select id="yColumnsBar" name="yColumns" multiple="multiple">
+                            </select>
+                        </div>
                     </div>
 
                     {#LINE GRAPH OPTIONS#}
@@ -168,16 +202,23 @@
                         <small id="customLabelHelp" class="form-text text-muted">If you'd like to use custom line labels for the graph, enter them as a comma-separated list here</small>
                         <input id="customLabels" name="customLabels" type="text" class="form-control" placeholder="Column 1, Column 2, ...">
 
+                        <div>
+                            <label for="yColumnsLine">Columns To Plot</label>
+                            <small id="yColumnsLineHelp" class="form-text text-muted">Based off the data uploaded, please select the columns you'd like to plot</small>
+                            <select id="yColumnsLine" name="yColumns" multiple="multiple">
+                            </select>
+                        </div>
+
                         <label for="xAxisColumn">X-Axis Data</label>
-                        <small id="xAxisColumnHelp" class="form-text text-muted">Based off the data you uploaded, please select the column which represents the x-axis.</small>
-                        <select id="xAxisColumn" name="xAxisCol" type="text" class="custom-select" placeholder="Choose...">
+                        <small id="xAxisColumnHelp" class="form-text text-muted">Based off the data uploaded, please select the column which represents the x-axis.</small>
+                        <select id="xAxisColumn" name="xAxisCol" type="text" class="custom-select">
                         </select>
                     </div>
 
                 </div>
             </div>
             <div class="col-sm">
-                <img id="graphPreview" src="{{ url_for('static', filename='graph_placeholder.png') }}" width="60%"/>
+                <img id="graphPreview" src="{{ url_for('static', filename='graph_placeholder.png') }}"/>
                 <small id="emailHelp" class="form-text text-muted">Click below to generate a preview for your graph</small>
                 <button id="previewGraph" type="button" class="btn btn-secondary" onclick="generateGraph()" disabled>Preview</button>
             </div>
@@ -225,9 +266,19 @@
             </div>
         </div>
         <div class="row odd">
-            <div class="col-sm">
-                <button type="submit" class="btn btn-primary">Register New Graph</button>
+            <div class="col-6">
+                <div class="form-group">
+                  <h5>Email Subject</h5>
+                  <input type="text" class="form-control" id="emailSubject" name="emailSubject">
+                  <small id="subjectHelp" class="form-text text-muted">The subject for your graph email notification</small>
+                  <h5>Email Body</h5>
+                  <input type="textarea" class="form-control" id="emailBody" name="emailBody">
+                  <small id="bodyHelp" class="form-text text-muted">The body of your email notification</small>
+              </div>
             </div>
+        </div>
+        <div class="row odd justify-content-center" style="margin-bottom:30px">
+            <button type="submit" class="btn btn-primary">Register New Graph</button>
         </div>
     </form>
 {% endblock %}
