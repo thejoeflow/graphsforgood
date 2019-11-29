@@ -77,7 +77,7 @@ def generate_pie(event):
     if (ll < vl):
         for i in range(vl-ll):
             labels.append('')
-    elsif (ll > vl):
+    elif (ll > vl):
         for i in range(ll-vl):
             labels.pop()
 
