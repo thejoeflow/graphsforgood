@@ -188,7 +188,7 @@ def lambda_handler(event, context):
     returnval = dict()
     try:
         x = {"inp": event['inp'], "out": event['out'], "email_add": event['email_add'], "graph_id": graph_id}
-        resp = lambda_client.invoke(FunctionName="file_to_temp", InvocationType='RequestResponse',
+        resp = lambda_client.invoke(FunctionName="move_temp_toPermanent", InvocationType='RequestResponse',
                                     Payload=json.dumps(x))
         s = resp['Payload'].read().decode("utf-8")
         s = s.replace('\\', '')
@@ -303,10 +303,10 @@ lambda_client = boto3.client('lambda')
 def lambda_handler(event, context):
     try:
         x = {"email_add": event['email_add']}
-        invoke = lambda_client.invoke(FunctionName="Get_user", InvocationType='RequestResponse', Payload=json.dumps(x))
+        invoke = lambda_client.invoke(FunctionName="get_user", InvocationType='RequestResponse', Payload=json.dumps(x))
 
         user = json.loads(invoke['Payload'].read().decode("utf-8"))
-        user = user.get('graph').get(str(event['graph_id'])).get(event['attribute'])
+        user = user.get('body').get("graph").get(str(event['graph_id'])).get(event['attribute'])
 
         return user
 
@@ -314,17 +314,19 @@ def lambda_handler(event, context):
         print(e)
         print("Failed to get information about user with email address provided: " + event['email_add'], e, "\n")
         raise e
+
+
 '''
 expected Input:
 {
   "email_add": "shreya@gmail.com",
-  "graph_id": "shreya_gmail_com2019_11_28_22_16_40_090105",
+  "graph_id": "shreya_gmail_com2019_11_29_03_43_08_823502",
   "attribute": "config"
 }
 '''
 
 """
-Function6: get_all_graph()
+Function6: get_all_graph_config()
        input: email .
 
        :returns: Returns the graph config for all the graph_id's in json format.
@@ -343,22 +345,27 @@ lambda_client = boto3.client('lambda')
 
 def lambda_handler(event, context):
     try:
-        y = {"email_add": event['email_add']}
-        getuser = lambda_client.invoke(FunctionName="Get_user", InvocationType='RequestResponse', Payload=json.dumps(y))
-        user = json.loads(getuser['Payload'].read().decode("utf-8"))
+        x = {"email_add": event['email_add']}
+        invoke = lambda_client.invoke(FunctionName="get_user", InvocationType='RequestResponse', Payload=json.dumps(x))
+        user = json.loads(invoke['Payload'].read().decode("utf-8"))
+
+        user = user.get('body')
         value = user.get('graph')
+
         dict = {}
 
         for key, value in value.items():
             get_registered_graph = user.get('graph').get(str(key)).get(event['attribute'])
             dict.update({key: get_registered_graph})
+
         return json.dumps(dict)
-        # return user
 
     except Exception as e:
         print(e)
         print("Failed to get information about user with email address provided: " + event['email_add'], e, "\n")
         raise e
+
+
 '''
 expected Input:
 {
