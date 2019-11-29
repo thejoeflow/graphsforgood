@@ -8,7 +8,7 @@ from ui import config
 isOk = lambda code: 200 <= code < 300
 
 
-def generate_graph(graph_config, s3_datafile, username):
+def generate_graph(graph_config, s3_datafile, username, get_external_link = False):
 
     type = graph_config.graph_type
     graph_args = {
@@ -19,7 +19,7 @@ def generate_graph(graph_config, s3_datafile, username):
     }
 
     if type == 'pie':
-        if not_empty(graph_config.customLabels):  # optional
+        if not graph_config.customLabels:  # optional
             graph_args['labels'] = graph_config.customLabels
 
     elif type == 'line':
@@ -47,23 +47,25 @@ def generate_graph(graph_config, s3_datafile, username):
         bucket_name = list(s3.buckets.all())[0].name
 
         # parse response from lambda function
-        filename = resp['Payload'].read().decode("utf-8").strip("\"")
+        filename = resp.strip("\"")
         if filename == 'ERROR':
             return None
 
-        # get a presigned link to graph on s3
-        s3_client = boto3.client('s3', region_name="us-east-1")
-        try:
-            graph_link = s3_client.generate_presigned_url(
-                'get_object', Params={'Bucket': bucket_name,
-                                      'Key': filename},
-                ExpiresIn=3600)  # link expires in an hour
+        if get_external_link:
+            # get a presigned link to graph on s3
+            s3_client = boto3.client('s3', region_name="us-east-1")
+            try:
+                return s3_client.generate_presigned_url(
+                    'get_object', Params={'Bucket': bucket_name,
+                                          'Key': filename},
+                    ExpiresIn=3600)  # link expires in an hour
 
-        except ClientError as e:
-            print('ERROR - {}'.format(e))
-            return None
+            except ClientError as e:
+                print('ERROR - {}'.format(e))
+                return None
+        else:
+            return filename
 
-    return graph_link
 
 
 def not_empty(s):
@@ -87,10 +89,10 @@ def get_user(email):
         "email_add": email
     }
     result, resp = call_lambda_function(config.lambda_function_names['get_user'], **user)
-    if resp.get('Payload') is None:
+    if resp is None:
         return None
     else:
-        json_str = resp['Payload'].read().decode("utf-8")
+        json_str = resp
         resp_json = json.loads(json_str)
         if resp_json['statusCode'] == 200:
             return User(resp_json["body"])
@@ -115,6 +117,18 @@ def edit_existing_graph():
 def schedule_new_email():
     return True
 
+def register_new_graph(data):
+    result, resp = call_lambda_function(config.lambda_function_names['register_new_graph'], **data)
+    return resp.strip("\"") if result else None  # graph ID
+
+def get_graph_attribute(username, graphID, attribute):
+    event = {
+        "email_add": username,
+        "graph_id": graphID,
+        "attribute": attribute
+    }
+    result, resp = call_lambda_function(config.lambda_function_names['get_registered_graph'], **event)
+    return resp.strip("\"") if result else None
 
 def call_lambda_function(name, async_call=False, **kwargs):
     invocation = 'Event' if async_call else 'RequestResponse'
@@ -127,4 +141,4 @@ def call_lambda_function(name, async_call=False, **kwargs):
     else:
         print("Lambda Function: {} invoked successfully".format(name))
         result = True
-    return result, resp
+    return result, resp['Payload'].read().decode("utf-8")

@@ -10,6 +10,7 @@ from database import login_backend
 from flask import render_template, send_file, url_for, request, session
 from PIL import Image
 
+from email_scheduler.create_cloudwatch_rule import send_email
 from ui import webapp, lambdas
 
 
@@ -21,28 +22,8 @@ def new_graph():
 @webapp.route("/new_graph", methods=['POST'])
 def register_graph():
 
-
     form = request.form
-    csvFile = request.files['dataFile']
-
-    graph_type = form['graphType']
-    if graph_type == "pie":
-        i = 0
-    elif graph_type == "bar":
-        i = 1
-    else:  # line chart
-        i = 2
-
-    title = form.getlist('title')[i]
-    customLabels = form.getlist('customLabels')[i]
-    xAxisCol = int(form.get('xAxisCol'))
-    yCols = [int(i) for i in form.getlist('yColumns')]
-    if i == 1 or i == 2:
-        xLabel = form.getlist('xLabel')[i - 1]
-        yLabel = form.getlist('yLabel')[i - 1]
-    else:
-        xLabel = None
-        yLabel = None
+    graph_config = GraphConfig(request)
 
     subscribers = form.getlist('subscribers')
     subscribers.remove('email')  # Remove placeholder email
@@ -54,7 +35,43 @@ def register_graph():
     body = form['emailBody']
 
     username = session['email']
-    s3_path = upload_to_s3(csvFile, username)
+    s3_tmp_data = upload_to_s3(graph_config.csvFile, username)
+    s3_tmp_graph = lambdas.generate_graph(graph_config, s3_tmp_data, username)
+
+    post_data = {
+        "inp": s3_tmp_data,  # (Temporary input file path)
+        "out": s3_tmp_graph,  # (Temporary output file path)
+        "email_add": username,
+        "graph_name": graph_config.title,
+        "graph_type": graph_config.graph_type,
+        "email_list": subscribers,
+        "Async_val": async_schedule,
+        "cron_sche": cron,
+        "graph_title": graph_config.title,
+        "subject": subject,
+        "body": body,
+        "x_label": graph_config.xLabel,
+        "y_label": graph_config.yLabel,
+        "x_col": graph_config.xAxisCol,
+        "y_col": graph_config.yCols,
+        "labels": graph_config.customLabels
+    }
+
+    graph_id = lambdas.register_new_graph(post_data)
+    s3_graph_out = lambdas.get_graph_attribute(username, graph_id, 'out')
+
+    sched_data = {
+        "rule_name": graph_id,
+        "filename": s3_graph_out,
+        "scheduleExpression": cron,
+        "bucket_name": "lambda-ses-a3",
+        "sender": username,
+        "recipients": subscribers,
+        "subject": subject,
+        "body_html": body
+    }
+
+    send_email(sched_data)
 
     return render_template("graph_register.html")
 
@@ -69,7 +86,7 @@ def generate_graph_preview():
 
     username = session['email']
     s3_path = upload_to_s3(graph_config.csvFile, username)
-    graph_img_link = lambdas.generate_graph(graph_config, s3_path, username)
+    graph_img_link = lambdas.generate_graph(graph_config, s3_path, username, get_external_link=True)
 
     return graph_img_link if graph_img_link is not None else ""
 
@@ -79,7 +96,9 @@ def upload_to_s3(file, user_email):
     filename, ext = file.filename.rsplit('.', 1)
     name = str(user_email).replace('@', '_').replace('.', '_')
     s3_path = 'temp' + "/" + name + "/" + new_file_timestamp() + "." + ext
-    bucket.put_object(Key=s3_path, Body=file)
+    resp = bucket.put_object(Key=s3_path, Body=file)
+    print("Upload data response: ")
+    print(resp)
     return s3_path
 
 
@@ -122,7 +141,7 @@ class GraphConfig:
             i = 2
 
         self.title = form.getlist('title')[i]
-        self.customLabels = form.getlist('customLabels')[i]
+        self.customLabels = form.getlist('customLabels')[i].split(",")
         xCol = form.get('xAxisCol')
         if not_empty(xCol):
             self.xAxisCol = int(xCol)

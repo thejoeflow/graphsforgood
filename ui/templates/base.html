@@ -15,14 +15,14 @@
                 <img src="{{url_for('static', filename='logo.png')}}" width="30" height="30" class="d-inline-block align-top" alt="">
                 Graphs for Good
             </a>
-            {% if session['email'] == None %}
-            <div class="nav-item">
-                <b>Hello,</b></b> {{ session['email'] | default("user", true) }}
-                <a href="{{ url_for('logout')}}">
-                <button class="btn ui-button btn-sm">
-                <span class="glyphicon glyphicon-log-out"></span>Logout</button>
-                </a>
-            </div>
+            {% if session['email'] != None %}
+                <div class="nav-item">
+                    <b>Hello,</b></b> {{ session['email'] | default("user", true) }}
+                    <a href="{{ url_for('logout')}}">
+                    <button class="btn ui-button btn-sm">
+                    <span class="glyphicon glyphicon-log-out"></span>Logout</button>
+                    </a>
+                </div>
             {% endif %}
         </nav>
         <div class="container-fluid">

@@ -1,13 +1,13 @@
 import os
 import boto3
 from botocore.exceptions import ClientError
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
+from email_scheduler.mime.multipart import MIMEMultipart
+from email_scheduler.mime.text import MIMEText
+from email_scheduler.mime.application import MIMEApplication
 import os.path
 
 
-from email.mime.application import MIMEApplication
+from email_scheduler.mime.application import MIMEApplication
 
 s3 = boto3.client("s3")
 # Replace sender@example.com with your "From" address.

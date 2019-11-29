@@ -1,10 +1,10 @@
 import os
 from botocore.exceptions import ClientError
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email_scheduler.mime.multipart import MIMEMultipart
+from email_scheduler.mime.text import MIMEText
 import os.path
 
-from email.mime.application import MIMEApplication
+from email_scheduler.mime.application import MIMEApplication
 
 import boto3
 
