@@ -94,7 +94,11 @@ def get_user(email):
         return None
     else:
         json_str = resp['Payload'].read().decode("utf-8")
-        return User(json.loads(json_str))
+        resp_json = json.loads(json_str)
+        if resp_json['statusCode'] == 200:
+            return User(resp_json)
+        else:
+            return None
 
 
 class User:
@@ -105,25 +109,6 @@ class User:
         self.last_name = json_file.get('Last Name')
         self.password_hash = json_file.get('password_hash')
         self.salt = json_file.get('salt')
-
-
-# def register_new_graph():line_ylabel
-#     {'name': string,
-#      'user_email': string,
-#     's3_data_file': string,
-#      'type': string,
-#      'async': boolean,
-#      'cron_sched': string,
-#      'graph_config': {
-#          'title': string,
-#          'xlabel': string,
-#          'ylabel': string,
-#          'x_axis_col': int,
-#          'y_axis_col': int[],
-#          'labels': string[],
-#         }
-#      }
-#     return True
 
 
 def edit_existing_graph():
