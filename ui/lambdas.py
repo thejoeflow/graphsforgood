@@ -13,35 +13,36 @@ def generate_graph(type, title, csv_name, username,
                    ylabel=None, line_xconstr=None,
                    bar_columns=None):
     graph_args = {
-            'type': type,
-            'title': title,
-            's3_filename': csv_name,
-            'username': username
-            }
+        'type': type,
+        'title': title,
+        's3_filename': csv_name,
+        'username': username
+    }
 
     if type == 'pie':
-        if empty_string(labels):  # optional
+        if not_empty(labels):  # optional
             graph_args['labels'] = labels
 
     elif type == 'line':
         graph_args['x_column'] = line_xcol
+        # Don't think we're gunna support this for the demo
         graph_args['y_column'] = line_ycol
-        if empty_string(xlabel):  # optional
+        if not_empty(xlabel):  # optional
             graph_args['xlabel'] = xlabel
-        if empty_string(ylabel):  # optional
+        if not_empty(ylabel):  # optional
             graph_args['ylabel'] = ylabel
-        if empty_string(line_xconstr):  # optional
+        if not_empty(line_xconstr):  # optional
             graph_args['x_constraint'] = line_xconstr
 
     elif type == 'bar':
         graph_args['columns'] = bar_columns
-        if empty_string(xlabel):
+        if not_empty(xlabel):
             graph_args['xlabel'] = xlabel
-        if empty_string(ylabel):
+        if not_empty(ylabel):
             graph_args['ylabel'] = ylabel
 
     result, resp = call_lambda_function(
-            config.lambda_function_names['generate_graph'], **graph_args)
+        config.lambda_function_names['generate_graph'], **graph_args)
 
     if result:
         # access s3
@@ -57,18 +58,20 @@ def generate_graph(type, title, csv_name, username,
         s3_client = boto3.client('s3', region_name="us-east-1")
         try:
             graph_link = s3_client.generate_presigned_url(
-                    'get_object', Params={'Bucket': bucket_name,
-                                          'Key': filename},
-                    ExpiresIn=3600)  # link expires in an hour
+                'get_object', Params={'Bucket': bucket_name,
+                                      'Key': filename},
+                ExpiresIn=3600)  # link expires in an hour
 
         except ClientError as e:
-           print('ERROR - {}'.format(e))
-           return None
+            print('ERROR - {}'.format(e))
+            return None
 
     return graph_link
 
-def empty_string(s):
+
+def not_empty(s):
     return s and s.strip()
+
 
 def save_user(email, firstname, lastname, password_hash, salt):
     user = {
@@ -87,10 +90,10 @@ def get_user(email):
         "email_add": email
     }
     result, resp = call_lambda_function(config.lambda_function_names['get_user'], **user)
-    if resp.get('Payload') is None:
+    if resp.get('Item') is None:
         return None
     else:
-        json_str = resp['Payload'].read().decode("utf-8")
+        json_str = resp['Item'].read().decode("utf-8")
         return User(json.loads(json_str))
 
 
