@@ -1,6 +1,6 @@
 #!/bin/bash
 
-f_name=generate_graph  # generate_graph
+f_name=generate_graph  # lambda function name
 src_files=generate_bar.py generate_pie.py generate_line.py generate_graph.py
 handler=generate_graph.lambda_handler  # this would be whick file the lambda_handler function is in
 using_layer=false  # this would be if using a layer, I don't think anything apart from generate_graph is using it so leave it on false
