@@ -71,6 +71,16 @@ def generate_pie(event):
         else:
             values.append(float(x))
 
+    # resize label to size of data if mismatch
+    ll = len(labels)
+    vl = len(values)
+    if (ll < vl):
+        for i in range(vl-ll):
+            labels.append('')
+    elif (ll > vl):
+        for i in range(ll-vl):
+            labels.pop()
+
     # normalize data
     total = sum(values)
     for i in range(len(values)):

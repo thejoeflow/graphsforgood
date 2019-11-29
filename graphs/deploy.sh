@@ -41,7 +41,7 @@ else
   zip function.zip generate_graph.py generate_pie.py generate_bar.py generate_line.py > /dev/null
 
   echo "    uploading code..."
-  aws lambda update-function-code --function-name generate_graph --zip-file fileb://function.zip
+  aws lambda update-function-code --function-name generate_graph --zip-file fileb://function.zip >> aws.log
 
 fi
 

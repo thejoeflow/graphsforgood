@@ -132,7 +132,7 @@
             <div class="col-sm">
                 <div class="form-group">
                     <label for="dataFileUpload">Data Example</label>
-                    <input type="file" class="form-control-file" id="dataFileUpload" name="dataFile">
+                    <input type="file" class="form-control-file" id="dataFileUpload" name="dataFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                     <label for="dataFileUpload">Graph Type</label>
                     <select class="custom-select" id="graphTypeSelect" name="graphType">
                         <option selected>Choose...</option>
@@ -229,7 +229,7 @@
             <div class="col-sm">
               <div class="form-group">
                   <h5>Subscriber Emails</h5>
-                  <input type="email" class="form-control" id="subscriberEmailAdd" aria-describedby="emailHelp" placeholder="Enter email">
+                  <input type="email" class="form-control" id="subscriberEmailAdd" aria-describedby="emailHelp" placeholder="example@domain.com">
                   <small id="emailHelp" class="form-text text-muted">Add email subscribers for this graph</small>
                   <button id="emailAdd" type="button" class="btn btn-secondary">Add</button>
               </div>
@@ -238,7 +238,7 @@
                 <h5>Subscribers</h5>
                 <ul id="subscriberList" class="list-group list-group-horizontal-md">
                     <li id="emailExample" class="badge badge-pill badge-light justify-content-between align-items-center">
-                        <input type='text' name='subscribers' value='email' class="email form-control-plaintext" readonly>
+                        <input type='text' name='subscribers' value='email' class="email form-control-plaintext" pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$" readonly>
                         <span class="emailDelete clickable"><i class="fas fa-minus-circle"></i></span>
                     </li>
                 </ul>
