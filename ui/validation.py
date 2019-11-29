@@ -4,10 +4,10 @@ from ui import webapp
 
 validate_values = {
     'PWORD_MIN_LEN': 6,
-    'PWORD_MAX_LEN': 20,
+    'PWORD_MAX_LEN': 30,
     'NAME_MIN_LEN': 3,
-    'NAME_MAX_LEN': 20,
-    'NAME_REGEX': '^([0-9a-z_\\-\\s])+$'
+    'NAME_MAX_LEN': 30,
+    'NAME_REGEX': "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 }
 
 
