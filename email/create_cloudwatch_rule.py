@@ -52,7 +52,6 @@ def send_email(input_json):
 
 email_add = 'user2@gmail.com'
 graph_id = 'user2_gmail_com2019_11_27_21_29_55_286841vyhggjg'
-
 cron = login_backend.get_registered_graph(email_add, graph_id, 'cron')
 receiver_email = login_backend.get_registered_graph(email_add, graph_id, 'receiver_email')
 file_path = login_backend.get_registered_graph(email_add, graph_id, 'out')
@@ -72,8 +71,8 @@ input_dictionary = {
     "body_html" : body
 }
 
-for k, v in input_dictionary.items():
-    print(k, v)
+# for k, v in input_dictionary.items():
+#     print(k, v)
 
 
 send_email(input_dictionary);
