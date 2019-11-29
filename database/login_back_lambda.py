@@ -60,56 +60,6 @@ Function2 : get_user()
        """
 
 import json
-import boto3
-import random
-import string
-
-from boto3.dynamodb.conditions import Key, Attr
-
-dynamodb = boto3.resource('dynamodb')
-dynamoTable = dynamodb.Table('Login_table')
-
-def lambda_handler(event, context):
-    try:
-        check = dynamoTable.query(
-            KeyConditionExpression=Key('email').eq(event['email_add'])
-        )
-        if len(check['Items']) is not 0:
-
-            response = dynamoTable.get_item(
-                Key={
-                    'email':event['email_add'],
-                }
-            )
-            return response['Item']
-        else:
-            return False
-    except Exception as e:
-        print("Failed to retrieve user: " + event['email_add'], e, "\n")
-        return {
-            'statusCode': 500,
-            'body': json.dumps("Oops! Something went wrong.")
-            }
-
-"""
-expected Input:
-{
-  "email_add": "shreya3243@gmail.com"
-}
-       """
-
-
-
-
-"""
-Function3: move_temp_toPermanent()
-        Moves data from temp folder in S3 to permanent directory( "user_name\graph_id\inp\file" and "user_name\graph_id\out\file_out")
-       :returns: permanent/final path for both input and out file
-       :output example:  "shreya_gmail_com/test_gmail_com2019_11_28_02_22_44_718252/inp/2019_11_27_16_06_49_262655.csv",
-                         "shreya_gmail_com/test_gmail_com2019_11_28_02_22_44_718252/out/2019_11_28_10_27_24_425159_out.jpg"
-       """
-
-import json
 import urllib.parse
 import boto3
 
@@ -144,7 +94,60 @@ def lambda_handler(event, context):
 
     except Exception as e:
         return False
-        raise e
+
+"""
+expected Input:
+{
+  "email_add": "shreya3243@gmail.com"
+}
+       """
+
+
+
+
+"""
+Function3: move_temp_toPermanent()
+        Moves data from temp folder in S3 to permanent directory( "user_name\graph_id\inp\file" and "user_name\graph_id\out\file_out")
+       :returns: permanent/final path for both input and out file
+       :output example:  "shreya_gmail_com/test_gmail_com2019_11_28_02_22_44_718252/inp/2019_11_27_16_06_49_262655.csv",
+                         "shreya_gmail_com/test_gmail_com2019_11_28_02_22_44_718252/out/2019_11_28_10_27_24_425159_out.jpg"
+       """
+
+import json
+import urllib.parse
+import boto3
+
+print('Loading function')
+
+bucket_name = 'shreyarajput'
+bucket = boto3.resource('s3').Bucket(bucket_name)
+
+
+def lambda_handler(event, context):
+    returndata = dict()
+    try:
+        username = str(event['email_add']).replace('@', '_').replace('.', '_')
+        target_inp = username + "/" + str(event['graph_id']) + "/" + 'inp' + "/" + event['inp'].split('/')[2]
+        bucket.copy({'Bucket': bucket.name,
+                     'Key': event['inp']},
+                    target_inp)
+        bucket.delete_objects(Delete={'Objects': [{'Key': event['inp']}]})
+
+        target_out = username + "/" + str(event['graph_id']) + "/" + 'out' + "/" + event['out'].split('/')[2]
+        bucket.copy({'Bucket': bucket.name,
+                     'Key': event['out']},
+                    target_out)
+        bucket.delete_objects(Delete={'Objects': [{'Key': event['out']}]})
+
+        returndata['in'] = target_inp
+        returndata['out'] = target_out
+
+        return returndata
+
+
+    except Exception as e:
+        returndata['Error'] = str(e)
+        return json.dumps(returndata)
 
 
 '''
@@ -181,61 +184,71 @@ def lambda_handler(event, context):
     date_temp = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S.%f")
     date_temp = str(date_temp).replace(' ', '_').replace('/', '_').replace(':', '_').replace('.', '_')
     graph_id = str(event['email_add']).replace('@', '_').replace('.', '_') + date_temp
+
+    returnval = dict()
     try:
         x = {"inp": event['inp'], "out": event['out'], "email_add": event['email_add'], "graph_id": graph_id}
-        invoke = lambda_client.invoke(FunctionName="file_to_temp", InvocationType='RequestResponse',
-                                      Payload=json.dumps(x))
+        resp = lambda_client.invoke(FunctionName="file_to_temp", InvocationType='RequestResponse',
+                                    Payload=json.dumps(x))
+        s = resp['Payload'].read().decode("utf-8")
+        s = s.replace('\\', '')
+        invoke = json.loads(s)
 
-        paths = invoke['Payload'].read().decode()
-        paths = paths.replace("[", "").replace("]", "")
-        paths = paths.split(",")
-        s3_inp_path = paths[0]
-        s3_out_path = paths[1]
+        if 'Error' in invoke:
+            returnval['Error'] = 'Error reading file'
+            return json.dump(returnval)
 
-        print(s3_inp_path)
-        print(s3_out_path)
-        dynamoTable = dynamodb.Table('Login_table')
-        dynamoTable.update_item(
-            Key={
-                'email': event['email_add'],
-            },
-            UpdateExpression="set #Graph.#id = :name",
-            ExpressionAttributeNames={
-                '#Graph': 'graph',
-                '#id': str(graph_id),
-                # '#name': 'name',
-                # '#subgraph': 'subgraph',
-            },
-            ExpressionAttributeValues={
-                ':name': {'graph_Name': event['graph_name'],
-                          'inp': str(s3_inp_path),
-                          'out': str(s3_out_path),
-                          'receiver_email': event['email_list'],
-                          'cron': event['cron_sche'],
-                          'Async': event['Async_val'],
-                          'Date': date_temp,
-                          'body': event['body'],
-                          'subject': event['subject'],
-                          'config': {
-                              'graph_type': event['graph_type'],
-                              'graph_title': event['graph_title'],
-                              'x_label': event['x_label'],
-                              'y_label': event['y_label'],
-                              'x_col': event['x_col'],
-                              'y_col': event['y_col'],
-                              'labels': event['labels'],
+        else:
 
-                          }
-                          },
-            }
-        )
+            s3_inp_path = invoke.get('in')
+            s3_out_path = invoke.get('out')
+
+            dynamoTable = dynamodb.Table('Login_table')
+            dynamoTable.update_item(
+                Key={
+                    'email': event['email_add'],
+                },
+                UpdateExpression="set #Graph.#id = :name",
+                ExpressionAttributeNames={
+                    '#Graph': 'graph',
+                    '#id': str(graph_id),
+                    # '#name': 'name',
+                    # '#subgraph': 'subgraph',
+                },
+                ExpressionAttributeValues={
+                    ':name': {'graph_Name': event['graph_name'],
+                              'inp': str(s3_inp_path),
+                              'out': str(s3_out_path),
+                              'receiver_email': event['email_list'],
+                              'cron': event['cron_sche'],
+                              'Async': event['Async_val'],
+                              'Date': date_temp,
+                              'body': event['body'],
+                              'subject': event['subject'],
+                              'config': {
+                                  'graph_type': event['graph_type'],
+                                  'graph_title': event['graph_title'],
+                                  'x_label': event['x_label'],
+                                  'y_label': event['y_label'],
+                                  'x_col': event['x_col'],
+                                  'y_col': event['y_col'],
+                                  'labels': event['labels'],
+
+                              }
+                              },
+                }
+            )
 
         return graph_id
+
+
 
     except Exception as e:
         print(e)
         print("Failed to register user with email address provided: " + event['email_add'], e, "\n")
         raise e
+
+
 '''
 expected Input:
 {
@@ -256,11 +269,7 @@ expected Input:
   "body": "here is your graph",
   "x_label": "frequncy",
   "y_label": "car",
-  "x_col": [
-    "col1",
-    "col2",
-    "col3"
-  ],
+  "x_col": int,
   "y_col": [
     "row1",
     "row2",
@@ -273,4 +282,86 @@ expected Input:
   ]
 }
 '''
+"""
+Function5: get_registered_graph()
+       input: email, graph_id and graph attribute that you need.
 
+       :returns: Returns the specfied attribut
+       """
+
+import json
+import boto3
+import random
+import string
+import datetime
+
+dynamodb = boto3.resource('dynamodb')
+dynamoTable = dynamodb.Table('Login_table')
+lambda_client = boto3.client('lambda')
+
+
+def lambda_handler(event, context):
+    try:
+        x = {"email_add": event['email_add']}
+        invoke = lambda_client.invoke(FunctionName="Get_user", InvocationType='RequestResponse', Payload=json.dumps(x))
+
+        user = json.loads(invoke['Payload'].read().decode("utf-8"))
+        user = user.get('graph').get(str(event['graph_id'])).get(event['attribute'])
+
+        return user
+
+    except Exception as e:
+        print(e)
+        print("Failed to get information about user with email address provided: " + event['email_add'], e, "\n")
+        raise e
+'''
+expected Input:
+{
+  "email_add": "shreya@gmail.com",
+  "graph_id": "shreya_gmail_com2019_11_28_22_16_40_090105",
+  "attribute": "config"
+}
+'''
+
+"""
+Function6: get_all_graph()
+       input: email .
+
+       :returns: Returns the graph config for all the graph_id's in json format.
+       """
+
+import json
+import boto3
+import random
+import string
+import datetime
+
+dynamodb = boto3.resource('dynamodb')
+dynamoTable = dynamodb.Table('Login_table')
+lambda_client = boto3.client('lambda')
+
+
+def lambda_handler(event, context):
+    try:
+        y = {"email_add": event['email_add']}
+        getuser = lambda_client.invoke(FunctionName="Get_user", InvocationType='RequestResponse', Payload=json.dumps(y))
+        user = json.loads(getuser['Payload'].read().decode("utf-8"))
+        value = user.get('graph')
+        dict = {}
+
+        for key, value in value.items():
+            get_registered_graph = user.get('graph').get(str(key)).get(event['attribute'])
+            dict.update({key: get_registered_graph})
+        return json.dumps(dict)
+        # return user
+
+    except Exception as e:
+        print(e)
+        print("Failed to get information about user with email address provided: " + event['email_add'], e, "\n")
+        raise e
+'''
+expected Input:
+{
+  "email_add": "shreya@gmail.com"
+}
+'''

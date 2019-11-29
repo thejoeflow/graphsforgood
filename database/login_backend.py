@@ -163,16 +163,6 @@ labels= ['bmw', 'tesla', 'jaguar']
 subject = 'Hello from Graphs for Good'
 body = ['Hi, there this your subscribed graph report. Enjoy']
 
-
-
-# create_new_user(email_add, 'shreya', 'rajput', 'password')
-given_id = register_new_graph(email_add, graph_name, s3_inp_path, s3_out_path, email_list, Async_val, cron_sche, graph_type, graph_title, x_label, y_label, x_col, y_col, labels, subject, body)
-#
-# print(given_id)
-
-
-
-
 def get_user(email_add):
     try:
         dynamoTable = dynamodb.Table('Login_table')
@@ -228,7 +218,7 @@ def get_registered_graph(email_add, graph_id, attribute):
     return user.graph.get(str(graph_id)).get(attribute)
 
 
-print(get_registered_graph('shreya@gmail.com', 'shreya_gmail_com2019_11_28_22_02_17_411953', attribute))
+# print(get_registered_graph('shreya@gmail.com', 'shreya_gmail_com2019_11_28_22_02_17_411953', attribute))
 
 
 def get_all_graph(email_add):

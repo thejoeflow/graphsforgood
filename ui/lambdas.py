@@ -8,38 +8,35 @@ from ui import config
 isOk = lambda code: 200 <= code < 300
 
 
-def generate_graph(type, title, csv_name, username,
-                   labels=None, line_xcol=None, line_ycol=None, xlabel=None,
-                   ylabel=None, line_xconstr=None,
-                   bar_columns=None):
+def generate_graph(graph_config, s3_datafile, username):
+
+    type = graph_config.graph_type
     graph_args = {
         'type': type,
-        'title': title,
-        's3_filename': csv_name,
+        'title': graph_config.title ,
+        's3_filename': s3_datafile,
         'username': username
     }
 
     if type == 'pie':
-        if not_empty(labels):  # optional
-            graph_args['labels'] = labels
+        if not_empty(graph_config.customLabels):  # optional
+            graph_args['labels'] = graph_config.customLabels
 
     elif type == 'line':
-        graph_args['x_column'] = line_xcol
+        graph_args['x_column'] = graph_config.xAxisCol
         # Don't think we're gunna support this for the demo
-        graph_args['y_column'] = line_ycol
-        if not_empty(xlabel):  # optional
-            graph_args['xlabel'] = xlabel
-        if not_empty(ylabel):  # optional
-            graph_args['ylabel'] = ylabel
-        if not_empty(line_xconstr):  # optional
-            graph_args['x_constraint'] = line_xconstr
+        graph_args['y_column'] = graph_config.yCols
+        if not_empty(graph_config.xLabel):  # optional
+            graph_args['xlabel'] = graph_config.xLabel
+        if not_empty(graph_config.yLabel):  # optional
+            graph_args['ylabel'] = graph_config.yLabel
 
     elif type == 'bar':
-        graph_args['columns'] = bar_columns
-        if not_empty(xlabel):
-            graph_args['xlabel'] = xlabel
-        if not_empty(ylabel):
-            graph_args['ylabel'] = ylabel
+        graph_args['columns'] = graph_config.yCols
+        if not_empty(graph_config.xLabel):  # optional
+            graph_args['xlabel'] = graph_config.xLabel
+        if not_empty(graph_config.yLabel):  # optional
+            graph_args['ylabel'] = graph_config.yLabel
 
     result, resp = call_lambda_function(
         config.lambda_function_names['generate_graph'], **graph_args)

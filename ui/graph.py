@@ -9,6 +9,7 @@ import boto3
 from database import login_backend
 from flask import render_template, send_file, url_for, request, session
 from PIL import Image
+
 from ui import webapp, lambdas
 
 
@@ -19,34 +20,8 @@ def new_graph():
 
 @webapp.route("/new_graph", methods=['POST'])
 def register_graph():
-    form = request.form
-    csvFile = request.files['dataFile']
-    graph_type = form['graphType']
-    if graph_type == "pie":
-        i = 0
-    elif graph_type == "bar":
-        i = 1
-    else:  # line chart
-        i = 2
-
-    title = form.getlist('title')[i]
-    customLabels = form.getlist('customLabels')[i]
-    xAxisCol = form['xAxisCol']
-    if i == 1 or i == 2:
-        xLabel = form.getlist('xLabel')[i - 1]
-        yLabel = form.getlist('yLabel')[i - 1]
-
-    subscribers = form.getlist('subscribers')
-    subscribers.remove('email')  # Remove placeholder email
-
-    async = form['sendSchedule'] == 'onDataUpdate'
-    cron = form['cron']
-
-    return render_template("graph_register.html")
 
 
-@webapp.route("/generate_graph", methods=['POST'])
-def generate_graph_preview():
     form = request.form
     csvFile = request.files['dataFile']
 
@@ -60,7 +35,8 @@ def generate_graph_preview():
 
     title = form.getlist('title')[i]
     customLabels = form.getlist('customLabels')[i]
-    xAxisCol = form.get('xAxisCol')
+    xAxisCol = int(form.get('xAxisCol'))
+    yCols = [int(i) for i in form.getlist('yColumns')]
     if i == 1 or i == 2:
         xLabel = form.getlist('xLabel')[i - 1]
         yLabel = form.getlist('yLabel')[i - 1]
@@ -71,15 +47,31 @@ def generate_graph_preview():
     subscribers = form.getlist('subscribers')
     subscribers.remove('email')  # Remove placeholder email
 
-    async = form['sendSchedule'] == 'onDataUpdate'
+    async_schedule = form['sendSchedule'] == 'onDataUpdate'
     cron = form['cron']
+
+    subject = form['emailSubject']
+    body = form['emailBody']
 
     username = session['email']
     s3_path = upload_to_s3(csvFile, username)
-    graph_img_link = lambdas.generate_graph(graph_type, title, s3_path, username,
-                                            labels=customLabels, line_xcol=xAxisCol,
-                                            xlabel=xLabel, ylabel=yLabel)
-    return graph_img_link
+
+    return render_template("graph_register.html")
+
+
+@webapp.route("/generate_graph", methods=['POST'])
+def generate_graph_preview():
+    form = request.form
+    graph_config = GraphConfig(request)
+
+    subscribers = form.getlist('subscribers')
+    subscribers.remove('email')  # Remove placeholder email
+
+    username = session['email']
+    s3_path = upload_to_s3(graph_config.csvFile, username)
+    graph_img_link = lambdas.generate_graph(graph_config, s3_path, username)
+
+    return graph_img_link if graph_img_link is not None else ""
 
 
 def upload_to_s3(file, user_email):
@@ -115,38 +107,36 @@ def graph_img(id):
 
     return send_file(img_obj, mimetype='image/PNG')
 
+class GraphConfig:
 
-def get_graphs_for_user(user_id):
-    # TODO: Get user graphs from database
-    graphs = [Graph("abc123", "Monthly Spending", GraphType.PIE, ["test@email.com"], "every day"),
-              Graph("abcd1233", "Favourite Fruits", GraphType.LINE_CHART, ["test@email.com", "admin@systen.com"],
-                    "every month"),
-              Graph("jkdfsb3783", "Network Bandwidth - December", GraphType.BAR_CHART, ["user@domain.ca"],
-                    "On Data Change")]
-    return graphs
+    def __init__(self, request):
+        form = request.form
+        self.csvFile = request.files['dataFile']
+
+        self.graph_type = form['graphType']
+        if self.graph_type == "pie":
+            i = 0
+        elif self.graph_type == "bar":
+            i = 1
+        else:  # line chart
+            i = 2
+
+        self.title = form.getlist('title')[i]
+        self.customLabels = form.getlist('customLabels')[i]
+        xCol = form.get('xAxisCol')
+        if not_empty(xCol):
+            self.xAxisCol = int(xCol)
+        else:
+            self.xAxisCol = None
+
+        self.yCols = [int(i) for i in form.getlist('yColumns')]
+        if i == 1 or i == 2:
+            self.xLabel = form.getlist('xLabel')[i - 1]
+            self.yLabel = form.getlist('yLabel')[i - 1]
+        else:
+            self.xLabel = None
+            self.yLabel = None
 
 
-class Graph:
-
-    def __init__(self, id, name, type, subscribers, schedule):
-        """
-        Instantiates a new graph object
-        :param id:
-        :param type:
-        :param subscribers:
-        :param schedule:
-        """
-        self.id = id
-        self.name = name
-        self.type = type
-        self.subscribers = subscribers
-        self.schedule = schedule
-
-    def get_emails(self):
-        return ",".join(self.subscribers)
-
-
-class GraphType(Enum):
-    PIE = 1
-    LINE_CHART = 2
-    BAR_CHART = 3
+def not_empty(s):
+    return s and s.strip()
