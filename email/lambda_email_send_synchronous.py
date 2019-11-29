@@ -115,7 +115,18 @@ def lambda_handler(event, context):
         # print(type(get_object(bucket_name, filename)))
         s3_object_body = get_object(bucket_name, filename).read()
     
-        part = MIMEApplication(s3_object_body, filename)
+        #part = MIMEApplication(s3_object_body, filename)
+        part = MIMEApplication(s3_object_body)
+        
+        # attachment
+# if attachment_string:   # if bytestring available
+#     part = MIMEApplication(str.encode('attachment_string'))
+# else:    # if file provided
+#     part = MIMEApplication(open(attachment_file.csv, 'rb').read())
+# part.add_header('Content-Disposition', 'attachment', filename='name_of_attachment.csv')
+# message.attach(part)
+
+
         part.add_header("Content-Disposition", 'attachment', filename=filename)
         msg.attach(part)
         ses_aws_client = boto3.client('ses', 'us-east-1')
@@ -180,7 +191,8 @@ def lambda_handler(event, context):
     # Look at emailParameters JSON to see the actual contents of the email 
     bucket_name = event['bucket_name']
     #filename = get_keys_from_s3(bucket_name)[0]
-    filename = 'file2.png'
+    filename = "armandordorica_gmail_com/armandordorica_gmail_com2019_11_29_06_28_20_358120/out/2019_11_29_01_25_53_203569_out.png"
+    #filename = event['filename']
     sender = event['sender']
     recipients = event['recipients']
     subject = event['subject']
