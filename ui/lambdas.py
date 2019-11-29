@@ -96,7 +96,7 @@ def get_user(email):
         json_str = resp['Payload'].read().decode("utf-8")
         resp_json = json.loads(json_str)
         if resp_json['statusCode'] == 200:
-            return User(resp_json)
+            return User(resp_json["body"])
         else:
             return None
 
