@@ -24,6 +24,7 @@ def authenticate(email, password):
         user = lambdas.get_user(email)
         if user is not None:
             password_given = sha256_hash_hex(password, user.salt)
+            print("Email:{}, user_email:{} ".format(email, user.email))
             return (email == user.email) & (password_given == user.password_hash)
         else:
             return False
@@ -36,7 +37,12 @@ def authenticate(email, password):
 def login_attempt():
     email = request.form.get("email")
     password = request.form.get("password")
+    print("Email:{}, password:{} ".format(email, password))
 
+    if "@" not in email:
+        return render_template("login.html", error_msg="An input email must be of the form user_email@domain.com ")
+    if "." not in email:
+        return render_template("login.html", error_msg="An input email must be of the form user_email@domain.com ")
     if authenticate(email, password):
         configure_user_session(email)
         return redirect(url_for("main"))
@@ -53,6 +59,10 @@ def register_new_user():
     salt = salt_generator()
     password_hash = sha256_hash_hex(password, salt)
 
+    if "@" not in email:
+        return render_template("login.html", error_msg="Invalid email format")
+    if "." not in email:
+        return render_template("login.html", error_msg="Invalid email format")
     if lambdas.get_user(email) is not None:
         print("Failed to register - email is already taken!")
         return render_template("login.html", error_msg="Email is already registered. Please choose a different email")
