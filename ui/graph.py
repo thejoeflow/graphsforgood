@@ -2,16 +2,16 @@ import datetime
 import io
 import os
 from random import randint
-from enum import Enum
 
 import boto3
+from botocore.exceptions import ClientError
 
-from database import login_backend
-from flask import render_template, send_file, url_for, request, session
+from flask import render_template, send_file, request, session
 from PIL import Image
 
 from email_scheduler.create_cloudwatch_rule import send_email
 from ui import webapp, lambdas
+from ui import data_objects as do
 
 
 @webapp.route("/new_graph")
@@ -21,9 +21,8 @@ def new_graph():
 
 @webapp.route("/new_graph", methods=['POST'])
 def register_graph():
-
     form = request.form
-    graph_config = GraphConfig(request)
+    graph_config = do.GraphConfig.generate_from_request(request)
 
     subscribers = form.getlist('subscribers')
     subscribers.remove('email')  # Remove placeholder email
@@ -35,7 +34,8 @@ def register_graph():
     body = form['emailBody']
 
     username = session['email']
-    s3_tmp_data = upload_to_s3(graph_config.csvFile, username)
+    csv_file = request.files['dataFile']
+    s3_tmp_data = upload_to_s3(csv_file, username)
     s3_tmp_graph = lambdas.generate_graph(graph_config, s3_tmp_data, username)
 
     post_data = {
@@ -79,13 +79,14 @@ def register_graph():
 @webapp.route("/generate_graph", methods=['POST'])
 def generate_graph_preview():
     form = request.form
-    graph_config = GraphConfig(request)
+    graph_config = do.GraphConfig.generate_from_request(request)
 
     subscribers = form.getlist('subscribers')
     subscribers.remove('email')  # Remove placeholder email
 
     username = session['email']
-    s3_path = upload_to_s3(graph_config.csvFile, username)
+    csv_file = request.files['dataFile']
+    s3_path = upload_to_s3(csv_file, username)
     graph_img_link = lambdas.generate_graph(graph_config, s3_path, username, get_external_link=True)
 
     return graph_img_link if graph_img_link is not None else ""
@@ -100,6 +101,10 @@ def upload_to_s3(file, user_email):
     print("Upload data response: ")
     print(resp)
     return s3_path
+
+
+def get_graphs(email):
+    user = lambdas.get_user(email);
 
 
 def new_file_timestamp():
@@ -126,36 +131,19 @@ def graph_img(id):
 
     return send_file(img_obj, mimetype='image/PNG')
 
-class GraphConfig:
 
-    def __init__(self, request):
-        form = request.form
-        self.csvFile = request.files['dataFile']
+def get_public_url(filename):
+    # get a presigned link to graph on s3
+    s3_client = boto3.client('s3', region_name="us-east-1")
+    try:
+        # access s3
+        s3 = boto3.resource('s3')
+        bucket_name = list(s3.buckets.all())[0].name
+        return s3_client.generate_presigned_url(
+            'get_object', Params={'Bucket': bucket_name,
+                                  'Key': filename},
+            ExpiresIn=3600)  # link expires in an hour
 
-        self.graph_type = form['graphType']
-        if self.graph_type == "pie":
-            i = 0
-        elif self.graph_type == "bar":
-            i = 1
-        else:  # line chart
-            i = 2
-
-        self.title = form.getlist('title')[i]
-        self.customLabels = form.getlist('customLabels')[i].split(",")
-        xCol = form.get('xAxisCol')
-        if not_empty(xCol):
-            self.xAxisCol = int(xCol)
-        else:
-            self.xAxisCol = None
-
-        self.yCols = [int(i) for i in form.getlist('yColumns')]
-        if i == 1 or i == 2:
-            self.xLabel = form.getlist('xLabel')[i - 1]
-            self.yLabel = form.getlist('yLabel')[i - 1]
-        else:
-            self.xLabel = None
-            self.yLabel = None
-
-
-def not_empty(s):
-    return s and s.strip()
+    except ClientError as e:
+        print('ERROR - {}'.format(e))
+        return None

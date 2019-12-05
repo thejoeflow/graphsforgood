@@ -11,12 +11,12 @@
         <div class="card-deck">
             {% for graph in graphs %}
                     <div class="card">
-                        <img class="card-img-top" src="{{ url_for("graph_img", id=graph.id )}}">
+                        <img class="card-img-top" src="{{ graph.get_graph_url() }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ graph.name }}</h5>
                                 <div class="row">
                                     <div class="col"><b>Type: </b></div>
-                                    <div class="col"><p>{{ graph.type.name }}</p></div>
+                                    <div class="col"><p>{{ graph.get_type() }}</p></div>
                                 </div>
                                 <div class="row">
                                     <div class="col"><b>Subscribers: </b></div>
@@ -24,7 +24,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col"><b>Schedule: </b></div>
-                                    <div class="col"><p>{{ graph.schedule }}</p></div>
+                                    <div class="col"><p>{{ graph.cron }}</p></div>
                                 </div>
                             <a href="{{ url_for("graph_details", id=graph.id) }}" class="btn btn-primary">Edit</a>
                         </div>
