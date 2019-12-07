@@ -10,7 +10,6 @@ def generate_pie(event):
     filename = str()
     if 's3_filename' in event:
         filename = event['s3_filename']
-        print('DEBUG - s3_filename=' + filename)
 
     else:
         print('ERROR - Must specify s3_filename')
@@ -19,7 +18,6 @@ def generate_pie(event):
     username = str()
     if 'username' in event:
         username = event['username']
-        print('DEBUG - username=' + username)
 
     else:
         print('ERROR - Must specify username')
@@ -28,7 +26,6 @@ def generate_pie(event):
     title = str()
     if 'title' in event:
         title = event['title']
-        print('DEBUG - title=' + title)
     else:
         title = None
 
