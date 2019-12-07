@@ -36,7 +36,7 @@ def register_graph():
 
     username = session['email']
 
-    if (!validate_graph_count(username)):
+    if not validate_graph_count(username):
         # do something to tell the user that we can't do this?
         flash("Each user can only generate 20 graphs!"+
               " You may have to delete a few.", 'error')
