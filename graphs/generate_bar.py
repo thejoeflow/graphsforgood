@@ -61,12 +61,11 @@ def generate_bar(event):
 
     # process data a bit:
     if xlabel is None:
+        xlabel = list()
         # treat first row as xlabel
         for i in columns:
             xlabel.append(data[0][i])
-        data.pop(0)
-    else:
-        data.pop(0)
+    data.pop(0)
 
     # convert from string to float
     values = list()
