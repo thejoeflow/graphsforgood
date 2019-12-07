@@ -6,11 +6,12 @@ from random import randint
 import boto3
 from botocore.exceptions import ClientError
 
-from flask import render_template, send_file, request, session
+from flask import render_template, send_file, request, session, flash
 from PIL import Image
 
 from email_scheduler.create_cloudwatch_rule import send_email
 from ui import webapp, lambdas
+from ui.validation import validate_graph_count
 from ui import data_objects as do
 
 
@@ -34,6 +35,13 @@ def register_graph():
     body = form['emailBody']
 
     username = session['email']
+
+    if (!validate_graph_count(username)):
+        # do something to tell the user that we can't do this?
+        flash("Each user can only generate 20 graphs!"+
+              " You may have to delete a few.", 'error')
+        return render_template("graph_register.html")
+
     csv_file = request.files['dataFile']
     s3_tmp_data = upload_to_s3(csv_file, username)
     s3_tmp_graph = lambdas.generate_graph(GraphConfig, s3_tmp_data, username)
