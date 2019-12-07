@@ -77,11 +77,7 @@ class GraphConfig:
             i = 2
 
         title = form.getlist('title')[i]
-        custom_labels = form.getlist('customLabels')[i]
-        if not_empty(custom_labels):
-            labels = custom_labels.split(",")
-        else:
-            labels = None
+        labels = None
 
         xCol = form.get('xAxisCol')
         if not_empty(xCol):
