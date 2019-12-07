@@ -73,15 +73,7 @@ def generate_line(event):
 
     # S3 client -------------------------------------------------
     s3 = boto3.resource('s3')
-    buckets = list(s3.buckets.all())
-
-    if len(buckets) < 1:
-        print('ERROR: No available S3 bucket!')
-        return 'ERROR'
-
-    # again, assuming that there is only one bucket
-    bucket = buckets[0]
-    print('DEBUG - using S3 bucket "{}"'.format(bucket.name))
+    bucket = s3.Bucket('lambda-ses-a3')
     bucket.download_file(filename, '/tmp/tmp.csv')
 
     # start parsing csv
