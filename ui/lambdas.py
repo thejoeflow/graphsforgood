@@ -25,20 +25,19 @@ def generate_graph(graph_config, s3_datafile, username, get_external_link=False)
             graph_args['labels'] = graph_config.labels
 
     elif type == 'line':
-        graph_args['x_column'] = graph_config.xAxisCol
-        # Don't think we're gunna support this for the demo
-        graph_args['y_column'] = graph_config.yCols
-        if not_empty(graph_config.xLabel):  # optional
-            graph_args['xlabel'] = graph_config.xLabel
-        if not_empty(graph_config.yLabel):  # optional
-            graph_args['ylabel'] = graph_config.yLabel
+        graph_args['x_column'] = graph_config.x_col
+        graph_args['y_column'] = graph_config.y_col
+        if not_empty(graph_config.x_label):  # optional
+            graph_args['xlabel'] = graph_config.x_label
+        if not_empty(graph_config.y_label):  # optional
+            graph_args['ylabel'] = graph_config.y_label
 
     elif type == 'bar':
-        graph_args['columns'] = graph_config.yCols
-        if not_empty(graph_config.xLabel):  # optional
-            graph_args['xlabel'] = graph_config.xLabel
-        if not_empty(graph_config.yLabel):  # optional
-            graph_args['ylabel'] = graph_config.yLabel
+        graph_args['columns'] = graph_config.y_col
+        if not_empty(graph_config.x_label):  # optional
+            graph_args['xlabel'] = graph_config.x_label
+        if not_empty(graph_config.y_label):  # optional
+            graph_args['ylabel'] = graph_config.y_label
 
     result, resp = call_lambda_function(
         config.lambda_function_names['generate_graph'], **graph_args)
@@ -79,8 +78,7 @@ def get_user(email):
     if resp is None:
         return None
     else:
-        json_str = resp
-        resp_json = json.loads(json_str)
+        resp_json = json.loads(resp)
         if resp_json['statusCode'] == 200:
             return User(resp_json["body"])
         else:
@@ -98,6 +96,7 @@ def register_new_graph(data):
     result, resp = call_lambda_function(config.lambda_function_names['register_new_graph'], **data)
     return resp.strip("\"") if result else None  # graph ID
 
+
 def get_graph_attribute(username, graphID, attribute):
     event = {
         "email_add": username,
@@ -106,6 +105,7 @@ def get_graph_attribute(username, graphID, attribute):
     }
     result, resp = call_lambda_function(config.lambda_function_names['get_registered_graph'], **event)
     return resp.strip("\"") if result else None
+
 
 def call_lambda_function(name, async_call=False, **kwargs):
     invocation = 'Event' if async_call else 'RequestResponse'

@@ -77,7 +77,12 @@ class GraphConfig:
             i = 2
 
         title = form.getlist('title')[i]
-        customLabels = form.getlist('customLabels')[i].split(",")
+        custom_labels = form.getlist('customLabels')[i]
+        if not_empty(custom_labels):
+            labels = custom_labels.split(",")
+        else:
+            labels = None
+
         xCol = form.get('xAxisCol')
         if not_empty(xCol):
             xAxisCol = int(xCol)
@@ -92,7 +97,7 @@ class GraphConfig:
             xLabel = None
             yLabel = None
 
-        return GraphConfig(title, graph_type, customLabels, xAxisCol, xLabel, yCols, yLabel)
+        return GraphConfig(title, graph_type, labels, xAxisCol, xLabel, yCols, yLabel)
 
     @staticmethod
     def generate_from_dict(config):
