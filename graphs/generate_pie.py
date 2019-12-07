@@ -53,13 +53,13 @@ def generate_pie(event):
 
     # assuming there is only one row of data for now
     values = list()
-    for x in data[1]:
-        x = x.strip()
-        if not x.isnumeric():
-            print('WARNING - non-numeric item in csv! Treating as 0.')
-            values.append(0.0)
-        else:
-            values.append(float(x))
+    if len(data) > 0:
+        for x in data[1]:
+            x = x.strip()
+            if not x.isnumeric():
+                values.append(0.0)
+            else:
+                values.append(float(x))
 
     # resize label to size of data if mismatch
     ll = len(labels)
