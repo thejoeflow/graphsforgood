@@ -10,7 +10,6 @@ def generate_bar(event):
     filename = str()
     if 's3_filename' in event:
         filename = event['s3_filename']
-        print('DEBUG - s3_filename=' + filename)
     else:
         print('ERROR - Must specify s3_filename')
         return 'ERROR'
@@ -18,7 +17,6 @@ def generate_bar(event):
     username = str()
     if 'username' in event:
         username = event['username']
-        print('DEBUG - username=' + username)
     else:
         print('ERROR - Must specify username')
         return 'ERROR'
@@ -27,7 +25,6 @@ def generate_bar(event):
     title = str()
     if 'title' in event:
         title = event['title']
-        print('DEBUG - title=' + title)
     else:
         title = None
 
@@ -63,21 +60,22 @@ def generate_bar(event):
             data.append(row)
 
     # process data a bit:
-    if xlabel is not None:
+    if xlabel is None:
+        xlabel = list()
         # treat first row as xlabel
         for i in columns:
             xlabel.append(data[0][i])
-    else:
-        data.pop(0)
+    data.pop(0)
 
     # convert from string to float
     values = list()
-    for i in columns:
-        x = data[1][i].strip()
-        if not x.isnumeric():
-            values.append(0.0)
-        else:
-            values.append(float(x))
+    if len(data > 0):
+        for i in columns:
+            x = data[0][i].strip()
+            if not x.isnumeric():
+                values.append(0.0)
+            else:
+                values.append(float(x))
 
     # Plot the graph
     if ylabel is not None:
