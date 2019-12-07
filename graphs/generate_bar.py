@@ -93,6 +93,8 @@ def generate_bar(event):
 
     bucket.upload_file('/tmp/bar.png', upload_filename)
 
+    plt.clf()
+
     # remove files from temporary storage
     os.remove('/tmp/tmp.csv')
     os.remove('/tmp/bar.png')

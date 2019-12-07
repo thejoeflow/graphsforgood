@@ -129,6 +129,8 @@ def generate_line(event):
     # upload to S3
     bucket.upload_file('/tmp/line.png', upload_filename)
 
+    plt.clf()
+
     # remove files from temporary storage
     os.remove('/tmp/tmp.csv')
     os.remove('/tmp/line.png')
