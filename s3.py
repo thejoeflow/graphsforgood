@@ -2,15 +2,11 @@
 import boto3
 
 # assuming we have one and only one s3 bucket
-bucket = list(boto3.resource('s3').buckets.all())[0]
+bucket_name = 'shreyarajput'
+bucket = boto3.resource('s3').Bucket(bucket_name)
 
 
-def upload_file(filename, email_add):
-    name = str(email_add).replace('@', '_').replace('.', '_')
-    target_temp = os.path.join('temp', name)
-
-    s3_name=
-    print(target_temp)
+def upload_file(filename, s3_name):
     ''' filename: string - filename of local file to upload
         s3_name: string - target key for the uploaded file (ex:tmp/usr/pie.png)
     '''
@@ -33,4 +29,4 @@ def delete_file(to_delete):
     bucket.delete_objects(Delete={'Objects': [{'Key': to_delete}]})
 
 
-upload_file('airbnb.csv', 'file1')
+upload_file('apple.csv', 'tmp/usr/pie.csv')

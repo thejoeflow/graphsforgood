@@ -224,9 +224,7 @@ def get_registered_graph(email_add, graph_id, attribute):
 def get_all_graph(email_add):
     '''Returns array of all the graph id's present'''
     user = User(get_user(email_add))
-    # user = User(check)
     value = user.graph
-    # graphs = value.keys()
     dict ={}
     for key, value in value.items():
 

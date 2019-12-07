@@ -1,4 +1,4 @@
-from ui import graph
+import graph
 
 
 class User:
@@ -23,12 +23,12 @@ graph_types = {
 
 
 class Graph:
-    def __init__(self, id, name, inp_s3, out_s3, async, cron, subject, body, receiver_email, config, date):
+    def __init__(self, id, name, inp_s3, out_s3, Async, cron, subject, body, receiver_email, config, date):
         self.id = id
         self.name = name
         self.inp_s3 = inp_s3
         self.out_s3 = out_s3
-        self.async = async
+        self.Async = Async
         self.cron = cron
         self.subject = subject
         self.body = body

@@ -372,3 +372,71 @@ expected Input:
   "email_add": "shreya@gmail.com"
 }
 '''
+
+"""
+Function6: delete_single_graph()
+       input: email and graph id.
+
+       :returns: deletes graph from s3 and database.
+       """
+
+import json
+import boto3
+import random
+import string
+import datetime
+
+dynamodb = boto3.resource('dynamodb')
+
+bucket_name = 'lambda-ses-a3'
+bucket = boto3.resource('s3').Bucket(bucket_name)
+
+
+def lambda_handler(event, context):
+    try:
+        dynamoTable = dynamodb.Table('Login_table')
+        resp = dynamoTable.get_item(
+            Key={
+                'email': event['email_add'],
+            }
+        )
+
+        graphs = resp['Item'].get('graph')
+
+        bucket.delete_objects(Delete={'Objects': [{'Key': graphs.get(event['graph_id']).get('inp')}]})
+        bucket.delete_objects(Delete={'Objects': [{'Key': graphs.get(event['graph_id']).get('out')}]})
+        # # remove that specific graph entry
+
+        graphs.pop(event['graph_id'], None)
+
+        # # update the dynamodb entry
+        ue = 'SET graph = :g'
+        eav = {':g': graphs}
+        dynamoTable.update_item(Key={
+            'email': event['email_add'],
+        },
+            UpdateExpression=ue,
+            ExpressionAttributeValues=eav)
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps("Deleted graph with id" + event['graph_id'])
+
+        }
+
+    except Exception as e:
+        print("Failed to register user with email address provided: " + event['email_add'], e, "\n")
+        return {
+            'statusCode': 500,
+            'body': json.dumps("Oops! Something went wrong. Files are missing in either s3 bucket or Database")
+        }
+
+'''
+expected Input:
+{
+  
+  "email_add": "user1@gmail.com",
+  "graph_id": "user1_gmail_com2019_12_07_01_33_58_995375"
+}
+
+'''

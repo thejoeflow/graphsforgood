@@ -2,9 +2,9 @@ import json
 import boto3
 
 
-from ui import config, graph
-from ui.data_objects import User
-from ui.data_objects import GraphConfig
+import config, graph
+import data_objects
+# ~=from ui.data_objects import GraphConfig
 
 # Not the same type of lambda lol
 isOk = lambda code: 200 <= code < 300
@@ -80,7 +80,7 @@ def get_user(email):
     else:
         resp_json = json.loads(resp)
         if resp_json['statusCode'] == 200:
-            return User(resp_json["body"])
+            return data_objects.User(resp_json["body"])
         else:
             return None
 
@@ -128,5 +128,5 @@ def update_data(username, graphID, inp, out):
         "inp": inp,
         "out": out,
     }
-    result, resp = call_lambda_function(config.lambda_function_names['update_data'], **event)
-    return resp.strip("\"") if result else None
+    resp = call_lambda_function(config.lambda_function_names['update_data'], **event)
+    return resp.strip("\"")
