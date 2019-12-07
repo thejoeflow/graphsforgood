@@ -22,7 +22,7 @@ def new_graph():
 @webapp.route("/new_graph", methods=['POST'])
 def register_graph():
     form = request.form
-    graph_config = do.GraphConfig.generate_from_request(request)
+    GraphConfig = do.GraphConfig.generate_from_request(request)
 
     subscribers = form.getlist('subscribers')
     subscribers.remove('email')  # Remove placeholder email
@@ -36,25 +36,25 @@ def register_graph():
     username = session['email']
     csv_file = request.files['dataFile']
     s3_tmp_data = upload_to_s3(csv_file, username)
-    s3_tmp_graph = lambdas.generate_graph(graph_config, s3_tmp_data, username)
+    s3_tmp_graph = lambdas.generate_graph(GraphConfig, s3_tmp_data, username)
 
     post_data = {
         "inp": s3_tmp_data,  # (Temporary input file path)
         "out": s3_tmp_graph,  # (Temporary output file path)
         "email_add": username,
-        "graph_name": graph_config.title,
-        "graph_type": graph_config.graph_type,
+        "graph_name": GraphConfig.graph_title,
+        "graph_type": GraphConfig.graph_type,
         "email_list": subscribers,
         "Async_val": async_schedule,
         "cron_sche": cron,
-        "graph_title": graph_config.title,
+        "graph_title": GraphConfig.graph_title,
         "subject": subject,
         "body": body,
-        "x_label": graph_config.xLabel,
-        "y_label": graph_config.yLabel,
-        "x_col": graph_config.xAxisCol,
-        "y_col": graph_config.yCols,
-        "labels": graph_config.customLabels
+        "x_label": GraphConfig.x_label,
+        "y_label": GraphConfig.y_label,
+        "x_col": GraphConfig.x_col,
+        "y_col": GraphConfig.y_col,
+        "labels": GraphConfig.labels
     }
 
     graph_id = lambdas.register_new_graph(post_data)
@@ -133,8 +133,8 @@ def graph_img(id):
 
 
 def get_public_url(filename):
-    # get a presigned link to graph on s3
-    s3_client = boto3.client('s3', region_name="us-east-1")
+    # get a presignboto3ed link to graph on s3
+    s3_client = boto3.client('s3', region_name="ca-central-1")
     try:
         # access s3
         s3 = boto3.resource('s3')

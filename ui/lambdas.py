@@ -1,26 +1,28 @@
 import json
 import boto3
 
-from data_objects import User
+
 from ui import config, graph
+from ui.data_objects import User
+from ui.data_objects import GraphConfig
 
 # Not the same type of lambda lol
 isOk = lambda code: 200 <= code < 300
 
 
-def generate_graph(graph_config, s3_datafile, username, get_external_link = False):
+def generate_graph(graph_config, s3_datafile, username, get_external_link=False):
 
     type = graph_config.graph_type
     graph_args = {
-        'type': type,
-        'title': graph_config.title ,
+        'type': graph_config.graph_type,
+        'title': graph_config.graph_title,
         's3_filename': s3_datafile,
         'username': username
     }
 
     if type == 'pie':
-        if not graph_config.customLabels:  # optional
-            graph_args['labels'] = graph_config.customLabels
+        if not graph_config.labels:  # optional
+            graph_args['labels'] = graph_config.labels
 
     elif type == 'line':
         graph_args['x_column'] = graph_config.xAxisCol
@@ -108,7 +110,7 @@ def get_graph_attribute(username, graphID, attribute):
 def call_lambda_function(name, async_call=False, **kwargs):
     invocation = 'Event' if async_call else 'RequestResponse'
     payload_json = json.dumps(kwargs)
-    resp = boto3.client('lambda').invoke(FunctionName=name, InvocationType=invocation, Payload=str.encode(payload_json))
+    resp = boto3.client('lambda', region_name="ca-central-1").invoke(FunctionName=name, InvocationType=invocation, Payload=str.encode(payload_json))
 
     if not isOk(resp['StatusCode']):
         print("Lambda Function: {} invocation failed, response: {}".format(name, resp))
@@ -117,3 +119,14 @@ def call_lambda_function(name, async_call=False, **kwargs):
         print("Lambda Function: {} invoked successfully".format(name))
         result = True
     return result, resp['Payload'].read().decode("utf-8")
+
+
+def update_data(username, graphID, inp, out):
+    event = {
+        "email_add": username,
+        "graph_id": graphID,
+        "inp": inp,
+        "out": out,
+    }
+    result, resp = call_lambda_function(config.lambda_function_names['update_data'], **event)
+    return resp.strip("\"") if result else None
