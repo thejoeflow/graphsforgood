@@ -49,4 +49,5 @@ def update_data():
 
     bucket = boto3.resource('s3').Bucket('lambda-ses-a3')
     bucket.put_object(Key=csv_path, Body=file)
+    return make_response(jsonify({'result': 'Upload probably successful'}), 200)
 
