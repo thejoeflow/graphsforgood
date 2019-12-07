@@ -1,4 +1,5 @@
 # Graphs for Good ![logo](ui/static/logo_sm.png)
+
 ### Helping people help people, one graph at a time
 
 ## Background
