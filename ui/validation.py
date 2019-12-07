@@ -1,6 +1,7 @@
 import re
 
 from ui import webapp
+import boto3
 
 validate_values = {
     'PWORD_MIN_LEN': 6,
@@ -10,6 +11,7 @@ validate_values = {
     'NAME_REGEX': "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 }
 
+db = boto3.client('dynamodb')
 
 @webapp.context_processor
 def add_validate_values():
@@ -38,3 +40,14 @@ def registration(username, password):
     return validate_values['NAME_MIN_LEN'] <= len(username) <= validate_values['NAME_MAX_LEN'] and \
            validate_values['PWORD_MIN_LEN'] <= len(password) <= validate_values['PWORD_MAX_LEN'] and \
            re.fullmatch(validate_values['NAME_REGEX'], username, flags=re.IGNORECASE) is not None
+
+
+def validate_graph_count(user):
+    item = db.get_item(
+            TableName='Login_table',
+            Key={'email':{'S': user}})['Item']
+    graphs = item['graph']['M']
+    if (len(graphs) >= 20):
+        return False
+
+    return True
