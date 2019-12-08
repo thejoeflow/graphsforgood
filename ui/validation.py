@@ -7,7 +7,7 @@ validate_values = {
     'PWORD_MIN_LEN': 6,
     'PWORD_MAX_LEN': 30,
     'NAME_MIN_LEN': 3,
-    'NAME_MAX_LEN': 30,
+    'NAME_MAX_LEN': 50,
     'NAME_REGEX': "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 }
 
