@@ -2,9 +2,9 @@ import json
 import boto3
 
 
-import config, graph
-import data_objects
-# ~=from ui.data_objects import GraphConfig
+from ui import config, graph
+from ui.data_objects import User
+from ui.data_objects import GraphConfig
 
 # Not the same type of lambda lol
 isOk = lambda code: 200 <= code < 300
@@ -80,7 +80,7 @@ def get_user(email):
     else:
         resp_json = json.loads(resp)
         if resp_json['statusCode'] == 200:
-            return data_objects.User(resp_json["body"])
+            return User(resp_json["body"])
         else:
             return None
 
@@ -107,6 +107,12 @@ def get_graph_attribute(username, graphID, attribute):
     return resp.strip("\"") if result else None
 
 
+def delete_graph(user, id):
+    event = {'email_add': user, 'graph_id': id}
+    result, resp = call_lambda_function(config.lambda_function_names['delete_graph'], **event)
+    return resp.strip("\"") if result else None
+
+
 def call_lambda_function(name, async_call=False, **kwargs):
     invocation = 'Event' if async_call else 'RequestResponse'
     payload_json = json.dumps(kwargs)
@@ -128,5 +134,5 @@ def update_data(username, graphID, inp, out):
         "inp": inp,
         "out": out,
     }
-    resp = call_lambda_function(config.lambda_function_names['update_data'], **event)
-    return resp.strip("\"")
+    result, resp = call_lambda_function(config.lambda_function_names['update_data'], **event)
+    return resp.strip("\"") if result else None
