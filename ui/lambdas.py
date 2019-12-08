@@ -107,6 +107,12 @@ def get_graph_attribute(username, graphID, attribute):
     return resp.strip("\"") if result else None
 
 
+def delete_graph(user, id):
+    event = {'email_add': user, 'graph_id': id}
+    result, resp = call_lambda_function(config.lambda_function_names['delete_graph'], **event)
+    return resp.strip("\"") if result else None
+
+
 def call_lambda_function(name, async_call=False, **kwargs):
     invocation = 'Event' if async_call else 'RequestResponse'
     payload_json = json.dumps(kwargs)
