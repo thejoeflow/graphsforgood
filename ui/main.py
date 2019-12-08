@@ -1,10 +1,10 @@
 from enum import Enum
 
 import boto3
-from flask import render_template, session, redirect, url_for, make_response, jsonify
+from flask import render_template, session, redirect, url_for, make_response, jsonify, request
 from ui import login
 
-import lambdas
+from ui import lambdas
 from ui import webapp
 
 
@@ -41,13 +41,21 @@ def update_data():
     for g in usr_data.graphs:
         if g.id == gid:
             graph_exists = True
-            csv_path = g.out_s3
+            csv_path = g.inp_s3
+            graph_config = g.config
             break
 
-    if not graph_exist:
+    if not graph_exists:
         return make_response(jsonify({'result': 'Invalid gid.'}), 401)
 
     bucket = boto3.resource('s3').Bucket('lambda-ses-a3')
     bucket.put_object(Key=csv_path, Body=file)
-    return make_response(jsonify({'result': 'Upload probably successful'}), 200)
+    resp = {'Upload': 'Good'}
+
+    # generate new graph
+    ggen_result = str(lambdas.generate_graph(graph_config, csv_path, usr_data.email))
+    if (ggen_result is not None):
+        resp['graph gen'] = ggen_result
+
+    return make_response(jsonify(resp), 200)
 
