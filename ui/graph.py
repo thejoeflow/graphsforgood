@@ -129,7 +129,7 @@ def graph_details(id):
 
 
 @webapp.route('/delete/<id>')
-def 
+def delete_graph(id):
     delete_result = lambdas.delete_graph(session['email'], id)
     if delete_result:
         flash("Graph successfully deleted")
