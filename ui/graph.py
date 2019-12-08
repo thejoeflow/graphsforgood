@@ -58,6 +58,9 @@ def register_graph():
     }
 
     graph_id = lambdas.register_new_graph(post_data)
+    if len(graph_id) > 64:
+        flash("Error registering graph", 'error')
+        return redirect(url_for('main'))
     s3_graph_out = lambdas.get_graph_attribute(username, graph_id, 'out')
 
     sched_data = {
@@ -73,7 +76,7 @@ def register_graph():
 
     send_email(sched_data)
 
-    return render_template("graph_register.html")
+    return render_template("main.html")
 
 
 # @webapp.route("/generate_graph", methods=['POST'])

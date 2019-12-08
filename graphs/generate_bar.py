@@ -69,7 +69,7 @@ def generate_bar(event):
 
     # convert from string to float
     values = list()
-    if len(data > 0):
+    if len(data) > 0:
         for i in columns:
             x = data[0][i].strip()
             if not x.isnumeric():
