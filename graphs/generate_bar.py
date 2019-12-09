@@ -21,6 +21,8 @@ def generate_bar(event):
         print('ERROR - Must specify username')
         return 'ERROR'
     upload_filename = filename.rsplit('.', 1)[0] + "_out.png"
+    if '/inp/' in upload_filename:
+        upload_filename = upload_filename.replace('/inp/', '/out/', 1)
 
     title = str()
     if 'title' in event:
@@ -71,7 +73,7 @@ def generate_bar(event):
     values = list()
     if len(data) > 0:
         for i in columns:
-            x = data[0][i].strip()
+            x = data[0][int(i)].strip()
             if not x.isnumeric():
                 values.append(0.0)
             else:

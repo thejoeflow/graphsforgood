@@ -22,6 +22,8 @@ def generate_line(event):
         return 'ERROR'
 
     upload_filename = filename.rsplit('.', 1)[0] + "_out.png"
+    if '/inp/' in upload_filename:
+        upload_filename = upload_filename.replace('/inp/', '/out/', 1)
 
     title = str()
     if 'title' in event:

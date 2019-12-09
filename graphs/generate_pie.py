@@ -84,6 +84,8 @@ def generate_pie(event):
 
     # upload to s3
     upload_filename = filename.rsplit('.', 1)[0] + "_out.png"
+    if '/inp/' in upload_filename:
+        upload_filename = upload_filename.replace('/inp/', '/out/', 1)
     bucket.upload_file('/tmp/pie.png', upload_filename)
     plt.clf()
 
