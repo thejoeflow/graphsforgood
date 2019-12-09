@@ -22,69 +22,73 @@ def new_graph():
 
 @webapp.route("/new_graph", methods=['POST'])
 def register_graph():
-    form = request.form
-    graph_config = do.GraphConfig.generate_from_request(request)
+    try:
+        form = request.form
+        graph_config = do.GraphConfig.generate_from_request(request)
 
-    subscribers = form.getlist('subscribers')
-    subscribers.remove('email')  # Remove placeholder email
+        subscribers = form.getlist('subscribers')
+        subscribers.remove('email')  # Remove placeholder email
 
-    async_schedule = form['sendSchedule'] == 'onDataUpdate'
-    cron = form['cron']
+        async_schedule = form['sendSchedule'] == 'onDataUpdate'
+        cron = form['cron']
 
-    subject = form['emailSubject']
-    body = form['emailBody']
+        subject = form['emailSubject']
+        body = form['emailBody']
 
-    username = session['email']
+        username = session['email']
 
-    if not validate_graph_count(username):
-        # do something to tell the user that we can't do this?
-        flash("Each user can only generate 20 graphs!"+
-              " You may have to delete a few.", 'error')
-        return render_template("graph_register.html")
+        # if not validate_graph_count(username):
+        #     # do something to tell the user that we can't do this?
+        #     flash("Each user can only generate 20 graphs! You may have to delete a few.", 'error')
+        #     return render_template("graph_register.html")
 
-    csv_file = request.files['dataFile']
-    s3_tmp_data = upload_to_s3(csv_file, username)
-    s3_tmp_graph = lambdas.generate_graph(graph_config, s3_tmp_data, username)
+        csv_file = request.files['dataFile']
+        s3_tmp_data = upload_to_s3(csv_file, username)
+        s3_tmp_graph = lambdas.generate_graph(graph_config, s3_tmp_data, username)
 
-    post_data = {
-        "inp": s3_tmp_data,  # (Temporary input file path)
-        "out": s3_tmp_graph,  # (Temporary output file path)
-        "email_add": username,
-        "graph_name": graph_config.graph_title,
-        "graph_type": graph_config.graph_type,
-        "email_list": subscribers,
-        "Async_val": async_schedule,
-        "cron_sche": cron,
-        "graph_title": graph_config.graph_title,
-        "subject": subject,
-        "body": body,
-        "x_label": graph_config.x_label,
-        "y_label": graph_config.y_label,
-        "x_col": graph_config.x_col,
-        "y_col": graph_config.y_col,
-        "labels": graph_config.labels
-    }
+        post_data = {
+            "inp": s3_tmp_data,  # (Temporary input file path)
+            "out": s3_tmp_graph,  # (Temporary output file path)
+            "email_add": username,
+            "graph_name": graph_config.graph_title,
+            "graph_type": graph_config.graph_type,
+            "email_list": subscribers,
+            "Async_val": async_schedule,
+            "cron_sche": cron,
+            "graph_title": graph_config.graph_title,
+            "subject": subject,
+            "body": body,
+            "x_label": graph_config.x_label,
+            "y_label": graph_config.y_label,
+            "x_col": graph_config.x_col,
+            "y_col": graph_config.y_col,
+            "labels": graph_config.labels
+        }
 
-    graph_id = lambdas.register_new_graph(post_data)
-    if len(graph_id) > 64:
-        flash("Error registering graph", 'error')
+        graph_id = lambdas.register_new_graph(post_data)
+        if len(graph_id) > 64:
+            flash("Error registering graph", 'error')
+            return redirect(url_for('main'))
+        s3_graph_out = lambdas.get_graph_attribute(username, graph_id, 'out')
+
+        sched_data = {
+            "rule_name": graph_id,
+            "filename": s3_graph_out,
+            "scheduleExpression": cron,
+            "bucket_name": "lambda-ses-a3",
+            "sender": username,
+            "recipients": subscribers,
+            "subject": subject,
+            "body_html": body
+        }
+
+        send_email(sched_data)
         return redirect(url_for('main'))
-    s3_graph_out = lambdas.get_graph_attribute(username, graph_id, 'out')
+    except:
+        error_msg="Please make sure all the fields are correctly populated."
+        return render_template("graph_register.html", error_msg=error_msg)
 
-    sched_data = {
-        "rule_name": graph_id,
-        "filename": s3_graph_out,
-        "scheduleExpression": cron,
-        "bucket_name": "lambda-ses-a3",
-        "sender": username,
-        "recipients": subscribers,
-        "subject": subject,
-        "body_html": body
-    }
 
-    send_email(sched_data)
-
-    return render_template("main.html")
 
 
 @webapp.route("/generate_graph", methods=['POST'])
@@ -141,7 +145,7 @@ def delete_graph(id):
 
 @webapp.route("/graph_img/<id>")
 def graph_img(id):
-    # TODO: Change this to retrieve graph data from S3 and dynamically generate graph
+    
 
     img = Image.open(os.path.join(webapp.root_path, 'static/fake_graph{}.png'.format(randint(1, 3))))
 

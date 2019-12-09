@@ -134,6 +134,10 @@
 {% block content %}
     <div class="row justify-content-center page-title odd">
         <h2>Register a New Graph</h2>
+        <br>
+    </div>
+    <div class="row justify-content-center page-title odd error">
+    <h4>{{error_msg if error_msg != None}}</h4>
     </div>
     <form id="graphForm" action="{{ url_for("register_graph") }}" enctype="multipart/form-data" method='post'>
         <h3>Graph Configuration</h3>
@@ -141,9 +145,9 @@
             <div class="col-sm">
                 <div class="form-group">
                     <label for="dataFileUpload">Data Example</label>
-                    <input type="file" class="form-control-file" id="dataFileUpload" name="dataFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                    <input type="file" class="form-control-file" id="dataFileUpload" name="dataFile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
                     <label for="dataFileUpload">Graph Type</label>
-                    <select class="custom-select" id="graphTypeSelect" name="graphType">
+                    <select required class="custom-select" id="graphTypeSelect" name="graphType">
                         <option selected>Choose...</option>
                         <option value="pie">Pie Graph</option>
                         <option value="bar">Bar Chart</option>
@@ -284,7 +288,7 @@
             </div>
         </div>
         <div class="row odd justify-content-center" style="margin-bottom:30px">
-            <button type="submit" class="btn btn-primary">Register New Graph</button>
+            <button type="submit"  class="btn btn-primary">Register New Graph</button>
         </div>
     </form>
 {% endblock %}

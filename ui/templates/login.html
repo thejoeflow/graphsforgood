@@ -92,22 +92,26 @@ $( function() {
             <h3>Helping people help people, one graph at a time</h3>
         </div>
     </div>
-
+    <div align="center">
     <div class='error'>{{error_msg if error_msg != None}}</div>
     <div class='success'>{{msg if msg != None}}</div>
     <form action='{{url_for('login_register')}}' method='post'>
-        <div>
-        <label>Email</label>
+
+         <div >
+        <label align="center">Email</label>
         <input type='text' name='email' value='{{email if email  != None}}'>
         </div>
         <div>
-        <label>Password</label>
+        <label align="center">Password</label>
         <input type='password' name='password'>
+
         </div>
         <div>
             <input type="submit" value="Login">
         </div>
+
     </form>
+    </div>
 </div>
 
 <div class="container">
