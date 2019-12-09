@@ -134,6 +134,10 @@
 {% block content %}
     <div class="row justify-content-center page-title odd">
         <h2>Register a New Graph</h2>
+        <br>
+    </div>
+    <div class="row justify-content-center page-title odd error">
+    <h4>{{error_msg if error_msg != None}}</h4>
     </div>
     <form id="graphForm" action="{{ url_for("register_graph") }}" enctype="multipart/form-data" method='post'>
         <h3>Graph Configuration</h3>
