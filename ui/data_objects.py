@@ -1,4 +1,4 @@
-import graph
+from ui import graph
 
 
 class User:
