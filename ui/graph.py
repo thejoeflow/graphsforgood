@@ -6,23 +6,24 @@ from random import randint
 import boto3
 from botocore.exceptions import ClientError
 
-from flask import render_template, send_file, request, session
+from flask import render_template, send_file, request, session, redirect, url_for, flash
 from PIL import Image
 
-# from email_scheduler.create_cloudwatch_rule import send_email
-import lambdas
-import data_objects as do
+from email_scheduler.create_cloudwatch_rule import send_email
+from ui import webapp, lambdas
+from ui.validation import validate_graph_count
+from ui import data_objects as do
 
 
-# @webapp.route("/new_graph")
+@webapp.route("/new_graph")
 def new_graph():
     return render_template("graph_register.html")
 
 
-# @webapp.route("/new_graph", methods=['POST'])
+@webapp.route("/new_graph", methods=['POST'])
 def register_graph():
     form = request.form
-    GraphConfig = do.GraphConfig.generate_from_request(request)
+    graph_config = do.GraphConfig.generate_from_request(request)
 
     subscribers = form.getlist('subscribers')
     subscribers.remove('email')  # Remove placeholder email
@@ -34,27 +35,33 @@ def register_graph():
     body = form['emailBody']
 
     username = session['email']
+
+    if not validate_graph_count(username):
+        # do something to tell the user that we can't do this?
+        flash("Each user can only generate 20 graphs! You may have to delete a few.", 'error')
+        return render_template("graph_register.html")
+
     csv_file = request.files['dataFile']
     s3_tmp_data = upload_to_s3(csv_file, username)
-    s3_tmp_graph = lambdas.generate_graph(GraphConfig, s3_tmp_data, username)
+    s3_tmp_graph = lambdas.generate_graph(graph_config, s3_tmp_data, username)
 
     post_data = {
         "inp": s3_tmp_data,  # (Temporary input file path)
         "out": s3_tmp_graph,  # (Temporary output file path)
         "email_add": username,
-        "graph_name": GraphConfig.graph_title,
-        "graph_type": GraphConfig.graph_type,
+        "graph_name": graph_config.graph_title,
+        "graph_type": graph_config.graph_type,
         "email_list": subscribers,
         "Async_val": async_schedule,
         "cron_sche": cron,
-        "graph_title": GraphConfig.graph_title,
+        "graph_title": graph_config.graph_title,
         "subject": subject,
         "body": body,
-        "x_label": GraphConfig.x_label,
-        "y_label": GraphConfig.y_label,
-        "x_col": GraphConfig.x_col,
-        "y_col": GraphConfig.y_col,
-        "labels": GraphConfig.labels
+        "x_label": graph_config.x_label,
+        "y_label": graph_config.y_label,
+        "x_col": graph_config.x_col,
+        "y_col": graph_config.y_col,
+        "labels": graph_config.labels
     }
 
     graph_id = lambdas.register_new_graph(post_data)
@@ -75,11 +82,10 @@ def register_graph():
     }
 
     send_email(sched_data)
+    return redirect(url_for('main'))
 
-    return render_template("main.html")
 
-
-# @webapp.route("/generate_graph", methods=['POST'])
+@webapp.route("/generate_graph", methods=['POST'])
 def generate_graph_preview():
     form = request.form
     graph_config = do.GraphConfig.generate_from_request(request)
@@ -107,7 +113,7 @@ def upload_to_s3(file, user_email):
 
 
 def get_graphs(email):
-    user = lambdas.get_user(email);
+    user = lambdas.get_user(email)
 
 
 def new_file_timestamp():
@@ -115,14 +121,25 @@ def new_file_timestamp():
     return str(date_temp).replace(' ', '_').replace('/', '_').replace(':', '_').replace('.', '_')
 
 
-# @webapp.route("/graph/<id>")
+@webapp.route("/graph/<id>")
 def graph_details(id):
     return render_template("graph_register.html")
 
 
-# @webapp.route("/graph_img/<id>")
+@webapp.route('/delete/<id>')
+def delete_graph(id):
+    delete_result = lambdas.delete_graph(session['email'], id)
+    if delete_result:
+        flash("Graph successfully deleted")
+    else:
+        flash("Unable to delete graph at this time. Please try again later.")
+
+    return redirect(url_for('main'))
+
+
+@webapp.route("/graph_img/<id>")
 def graph_img(id):
-    # TODO: Change this to retrieve graph data from S3 and dynamically generate graph
+    
 
     img = Image.open(os.path.join(webapp.root_path, 'static/fake_graph{}.png'.format(randint(1, 3))))
 
@@ -137,7 +154,7 @@ def graph_img(id):
 
 def get_public_url(filename):
     # get a presignboto3ed link to graph on s3
-    s3_client = boto3.client('s3', region_name="ca-central-1")
+    s3_client = boto3.client('s3', region_name="us-east-1")
     try:
         # access s3
         s3 = boto3.resource('s3')
